@@ -1,0 +1,2655 @@
+# uomthesis Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build an R package `uomthesis` that ships a Quarto template (standard + journal formats), an R-side scaffolder, a word counter, and a compliance validator for University of Manchester Alliance Manchester Business School PhD theses, encoding the *Presentation of Theses Policy v12 (March 2026)*.
+
+**Architecture:** One R package containing (a) R API in `R/`, (b) two sibling Quarto extensions in `inst/quarto/_extensions/`, (c) bundled CSL files in `inst/csl/`, (d) project skeletons in `inst/skeleton/` and `inst/skeleton-journal/`. The R API reads policy-derived constants from `R/policy.R` (single source of truth) and validates user projects against them. Quarto extensions are policy-compliant by default; the validator catches drift.
+
+**Tech Stack:** R (≥4.1), Quarto (≥1.5), LuaLaTeX (default engine), testthat (3e), cli, fs, glue, rlang, withr, yaml, pdftools (Suggests), quarto (Suggests), rstudioapi (Suggests).
+
+**Spec:** `docs/superpowers/specs/2026-05-31-uomthesis-design.md`
+
+---
+
+## Phase 0 — Bootstrap the package
+
+The repo currently holds RStudio's default `hello()` scaffold. Replace it with proper package metadata, set up testthat, and make a clean first commit before any feature work.
+
+### Task 0.1: Replace RStudio defaults; write proper DESCRIPTION
+
+**Files:**
+- Delete: `R/hello.R`, `man/hello.Rd`
+- Modify: `DESCRIPTION` (full rewrite)
+
+- [ ] **Step 1: Delete RStudio default files**
+
+```bash
+rm "R/hello.R" "man/hello.Rd"
+```
+
+- [ ] **Step 2: Rewrite DESCRIPTION**
+
+Replace `DESCRIPTION` contents with:
+
+```dcf
+Package: uomthesis
+Type: Package
+Title: University of Manchester AMBS PhD Thesis Template and Compliance Tools
+Version: 0.0.0.9000
+Authors@R: c(
+    person(
+      "Gabriel", "Cabrera",
+      email = "gabriel.cabrera.guz@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Provides a Quarto template (standard and journal formats), a
+    project scaffolder, a word counter, and a compliance validator for
+    PhD theses submitted to Alliance Manchester Business School (AMBS)
+    in the Faculty of Humanities at the University of Manchester. Encodes
+    the requirements of the University's Presentation of Theses Policy.
+License: MIT + file LICENSE
+URL: https://github.com/gabriel-cabrera-guz/uomthesis
+BugReports: https://github.com/gabriel-cabrera-guz/uomthesis/issues
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    fs,
+    glue,
+    rlang,
+    withr,
+    yaml
+Suggests:
+    knitr,
+    pdftools,
+    quarto,
+    rmarkdown,
+    rstudioapi,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add -A
+git commit -m "chore: replace RStudio defaults with package metadata"
+```
+
+### Task 0.2: Add LICENSE files and .gitignore
+
+**Files:**
+- Create: `LICENSE`
+- Create: `LICENSE.md`
+- Modify: `.gitignore`
+
+- [ ] **Step 1: Write LICENSE (the DESCRIPTION-style short file)**
+
+```
+YEAR: 2026
+COPYRIGHT HOLDER: Gabriel Cabrera
+```
+
+- [ ] **Step 2: Write LICENSE.md (the full MIT text)**
+
+Standard MIT license body, year `2026`, copyright holder `Gabriel Cabrera`. Use `usethis::use_mit_license()`-style boilerplate.
+
+- [ ] **Step 3: Extend .gitignore**
+
+Append to `.gitignore`:
+
+```
+.DS_Store
+*.Rcheck/
+*.tar.gz
+doc/
+Meta/
+_book/
+_freeze/
+/.quarto/
+/inst/doc
+```
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add LICENSE LICENSE.md .gitignore
+git commit -m "chore: add MIT license and extend gitignore"
+```
+
+### Task 0.3: Set up testthat infrastructure
+
+**Files:**
+- Create: `tests/testthat.R`
+- Create: `tests/testthat/setup.R`
+- Create: `tests/testthat/helper-paths.R`
+
+- [ ] **Step 1: Write tests/testthat.R**
+
+```r
+library(testthat)
+library(uomthesis)
+
+test_check("uomthesis")
+```
+
+- [ ] **Step 2: Write tests/testthat/setup.R (empty placeholder for now)**
+
+```r
+# Test setup. Populated as test infrastructure grows.
+```
+
+- [ ] **Step 3: Write tests/testthat/helper-paths.R**
+
+```r
+# Helpers for locating test fixtures inside the package tree.
+fixture_path <- function(...) {
+  testthat::test_path("fixtures", ...)
+}
+```
+
+- [ ] **Step 4: Verify R CMD check is happy with the skeleton**
+
+```bash
+R CMD build . && R CMD check uomthesis_0.0.0.9000.tar.gz
+```
+Expected: passes with 0 errors, 0 warnings (notes about missing exports/no R files are OK at this stage).
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add tests/
+git commit -m "test: set up testthat 3e infrastructure"
+```
+
+### Task 0.4: Add NAMESPACE (roxygen-managed)
+
+**Files:**
+- Modify: `NAMESPACE`
+
+- [ ] **Step 1: Replace NAMESPACE with roxygen-managed stub**
+
+```
+# Generated by roxygen2: do not edit by hand
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add NAMESPACE
+git commit -m "chore: switch NAMESPACE to roxygen-managed"
+```
+
+---
+
+## Phase 1 — Policy constants (the single source of truth)
+
+Every text, list, or numeric constant tied to the *Presentation of Theses Policy* lives in `R/policy.R`. Subsequent phases read from here; the validator references it; partial templates receive its values via metadata. **This is the most spec-critical file in the package.** Treat exact text literals as inviolable.
+
+### Task 1.1: Test the structure of `policy_constants()`
+
+**Files:**
+- Test: `tests/testthat/test-policy.R`
+
+- [ ] **Step 1: Write the failing test**
+
+```r
+test_that("policy_constants() returns the documented top-level structure", {
+  p <- policy_constants()
+
+  expect_type(p, "list")
+  expect_named(p, c("version", "dated", "next_review", "source_url",
+                    "margins_mm", "allowed_fonts", "pdflatex_safe_fonts",
+                    "allowed_linestretch", "word_caps",
+                    "required_prelims", "title_page_statement",
+                    "declaration_either", "declaration_or",
+                    "copyright_bullets", "ai_disclosure_sample",
+                    "allowed_degrees", "allowed_faculties",
+                    "allowed_schools", "ambs_divisions"))
+
+  expect_equal(p$version, "12")
+  expect_s3_class(p$dated, "Date")
+  expect_equal(format(p$dated, "%Y-%m"), "2026-03")
+  expect_s3_class(p$next_review, "Date")
+})
+```
+
+- [ ] **Step 2: Run; expect failure**
+
+```bash
+Rscript -e "devtools::test(filter = 'policy')"
+```
+Expected: error — `could not find function "policy_constants"`.
+
+- [ ] **Step 3: Stub `R/policy.R`**
+
+```r
+#' Constants drawn from the University of Manchester Presentation of Theses Policy
+#'
+#' Single source of truth for every policy-derived constant used elsewhere in
+#' the package. Each entry carries a comment with its policy section number so
+#' future policy revisions can be applied surgically.
+#'
+#' @return A named list.
+#' @keywords internal
+policy_constants <- function() {
+  list(
+    version       = "12",
+    dated         = as.Date("2026-03-01"),
+    next_review   = as.Date("2028-11-01"),
+    source_url    = "https://documents.manchester.ac.uk/display.aspx?DocID=7420",
+    margins_mm    = NULL,
+    allowed_fonts = NULL,
+    pdflatex_safe_fonts  = NULL,
+    allowed_linestretch  = NULL,
+    word_caps     = NULL,
+    required_prelims     = NULL,
+    title_page_statement = NULL,
+    declaration_either   = NULL,
+    declaration_or       = NULL,
+    copyright_bullets    = NULL,
+    ai_disclosure_sample = NULL,
+    allowed_degrees      = NULL,
+    allowed_faculties    = NULL,
+    allowed_schools      = NULL,
+    ambs_divisions       = NULL
+  )
+}
+```
+
+- [ ] **Step 4: Run; expect pass on top-level structure**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'policy')"
+```
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add R/policy.R tests/testthat/test-policy.R
+git commit -m "feat(policy): stub policy_constants() with documented structure"
+```
+
+### Task 1.2: Fill in the policy text constants (TDD per group)
+
+**Files:**
+- Modify: `R/policy.R`
+- Modify: `tests/testthat/test-policy.R`
+
+This task adds the real text and numeric values, each guarded by a snapshot or equality test so accidental drift fails CI. The exact wording matters; copy verbatim from the policy PDF.
+
+- [ ] **Step 1: Test margin values (§7.3)**
+
+Add to `tests/testthat/test-policy.R`:
+
+```r
+test_that("margins match policy §7.3 minima", {
+  m <- policy_constants()$margins_mm
+  expect_named(m, c("binding_edge", "other_min"))
+  expect_equal(m$binding_edge, 40)
+  expect_equal(m$other_min, 15)
+})
+```
+
+- [ ] **Step 2: Fill margins; run; expect pass**
+
+In `R/policy.R`, replace `margins_mm = NULL` with:
+
+```r
+margins_mm = list(
+  binding_edge = 40,  # §7.3 "no less than 40mm"
+  other_min    = 15   # §7.3 "other margins no less than 15mm"
+),
+```
+
+- [ ] **Step 3: Test allowed font lists (§7.1)**
+
+```r
+test_that("allowed_fonts and pdflatex_safe_fonts match policy §7.1", {
+  p <- policy_constants()
+  expect_setequal(p$allowed_fonts,
+    c("Arial", "Verdana", "Tahoma", "Trebuchet", "Calibri",
+      "Times", "Times New Roman", "Palatino", "Garamond"))
+  expect_setequal(p$pdflatex_safe_fonts, c("Times New Roman", "Times"))
+})
+```
+
+- [ ] **Step 4: Fill font lists; pass**
+
+```r
+allowed_fonts = c(
+  "Arial", "Verdana", "Tahoma", "Trebuchet", "Calibri",
+  "Times", "Times New Roman", "Palatino", "Garamond"
+),
+pdflatex_safe_fonts = c("Times New Roman", "Times"),
+```
+
+- [ ] **Step 5: Test allowed line spacing**
+
+```r
+test_that("allowed_linestretch matches policy §7.1", {
+  expect_setequal(policy_constants()$allowed_linestretch, c(1.5, 2.0))
+})
+```
+
+- [ ] **Step 6: Fill line spacing; pass**
+
+```r
+allowed_linestretch = c(1.5, 2.0),
+```
+
+- [ ] **Step 7: Test word caps**
+
+```r
+test_that("word_caps match policy §4.6 and §13.11", {
+  w <- policy_constants()$word_caps
+  expect_equal(w$standard$PhD, 80000)
+  expect_equal(w$standard$MPhil, 50000)
+  expect_equal(w$journal$PhD, 90000)
+  expect_equal(w$journal$MPhil, 60000)
+})
+```
+
+- [ ] **Step 8: Fill word caps; pass**
+
+```r
+word_caps = list(
+  standard = list(
+    PhD = 80000L, MPhil = 50000L, DBA = 50000L, MD = 80000L,
+    EngD = 80000L, `PhD by Enterprise` = 80000L,
+    `Professional Doctorate` = 50000L
+  ),
+  journal = list(
+    PhD = 90000L, MPhil = 60000L, DBA = 60000L, MD = 90000L,
+    EngD = 90000L, `PhD by Enterprise` = 90000L,
+    `Professional Doctorate` = 60000L
+  )
+),
+```
+
+- [ ] **Step 9: Test required prelim order (§8.1)**
+
+```r
+test_that("required_prelims matches policy §8.1 order", {
+  rp <- policy_constants()$required_prelims
+  expect_equal(rp,
+    c("covid_impact_statement", "title_page", "list_of_contents",
+      "other_lists", "abstract", "declaration", "copyright_statement"))
+})
+```
+
+- [ ] **Step 10: Fill required prelims; pass**
+
+```r
+required_prelims = c(
+  "covid_impact_statement",  # §8.1.a (optional; only when present)
+  "title_page",              # §8.1.b
+  "list_of_contents",        # §8.1.c
+  "other_lists",             # §8.1.d
+  "abstract",                # §8.1.e
+  "declaration",             # §8.1.f
+  "copyright_statement"      # §8.1.g
+),
+```
+
+- [ ] **Step 11: Snapshot-test the policy-mandated text constants**
+
+```r
+test_that("title page statement matches policy §8.1.b verbatim", {
+  expect_snapshot(policy_constants()$title_page_statement)
+})
+
+test_that("declaration EITHER variant matches policy §8.1.f verbatim", {
+  expect_snapshot(policy_constants()$declaration_either)
+})
+
+test_that("declaration OR variant matches policy §8.1.f verbatim", {
+  expect_snapshot(policy_constants()$declaration_or)
+})
+
+test_that("copyright bullets match policy §8.1.g verbatim", {
+  expect_snapshot(policy_constants()$copyright_bullets)
+})
+
+test_that("AI disclosure sample matches policy §9.1.d verbatim", {
+  expect_snapshot(policy_constants()$ai_disclosure_sample)
+})
+```
+
+- [ ] **Step 12: Fill the policy-mandated text constants — copy verbatim from the policy PDF**
+
+```r
+title_page_statement = "A thesis submitted to The University of Manchester for the degree of {degree} in the Faculty of {faculty}.",
+
+## NOTE on declaration constants
+## The policy text begins "that no portion..." / "what portion..." (the
+## framing "I declare ..." is supplied by the partial template, NOT here).
+## Copy the body verbatim from the policy PDF; do not introduce a leading
+## "I declare". The snapshot test in Step 11 will lock this in.
+
+declaration_either = paste(
+  "that no portion of the work referred to in this thesis has been",
+  "submitted in support of an application for another degree or",
+  "qualification of this or any other university or other institute",
+  "of learning."
+),
+
+declaration_or = paste(
+  "what portion of the work referred to in this thesis has been",
+  "submitted in support of an application for another degree or",
+  "qualification of this or any other university or other institute",
+  "of learning. This should include reference to joint authorship of",
+  "published materials which might have been included in a thesis",
+  "submitted by another student to this university or any other",
+  "university or other institute of learning."
+),
+
+copyright_bullets = c(
+  "The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the \"Copyright\") and they have given the University of Manchester certain rights to use such Copyright, including for administrative purposes.",
+  "Copies of this thesis, either in full or in extracts and whether in hard or electronic copy, may be made only in accordance with the Copyright, Designs and Patents Act 1988 (as amended) and regulations issued under it or, where appropriate, in accordance with licensing agreements which the University has from time to time. This page must form part of any such copies made.",
+  "The ownership of certain Copyright, patents, designs, trademarks and other intellectual property (the \"Intellectual Property\") and any reproductions of copyright works in the thesis, for example graphs and tables (\"Reproductions\"), which may be described in this thesis, may not be owned by the author and may be owned by third parties. Such Intellectual Property and Reproductions cannot and must not be made available for use without the prior written permission of the owner(s) of the relevant Intellectual Property and/or Reproductions.",
+  "Further information on the conditions under which disclosure, publication and commercialisation of this thesis, the Copyright and any Intellectual Property and/or Reproductions described in it may take place is available in the University IP Policy, in any relevant Thesis restriction declarations deposited in the University Library, the University Library's regulations and in the University's policy on the Presentation of Theses."
+),
+
+ai_disclosure_sample = "Generative AI Disclosure: I used [AI tool name] to assist in idea generation, image creation, and for feedback on grammar and content. I implemented some of its recommendations. I used [AI tool name] to explore ideas for visuals (one of which is used and cited on page 2)",
+```
+
+- [ ] **Step 13: Test allowed sets**
+
+```r
+test_that("allowed_degrees/faculties/schools/ambs_divisions are populated", {
+  p <- policy_constants()
+  expect_true("PhD" %in% p$allowed_degrees)
+  expect_setequal(p$allowed_faculties,
+    c("Humanities", "Biology, Medicine and Health", "Science and Engineering"))
+  expect_true("Alliance Manchester Business School" %in% p$allowed_schools)
+  expect_setequal(p$ambs_divisions, c("A&F", "IMP", "MSM", "PMO"))
+})
+```
+
+- [ ] **Step 14: Fill allowed sets; pass**
+
+```r
+allowed_degrees = c(
+  "PhD", "MPhil", "DBA", "MD", "EngD",
+  "PhD by Enterprise", "Professional Doctorate"
+),
+allowed_faculties = c(
+  "Humanities", "Biology, Medicine and Health", "Science and Engineering"
+),
+allowed_schools = c(
+  "Alliance Manchester Business School",
+  "School of Arts, Languages and Cultures",
+  "School of Social Sciences",
+  "School of Environment, Education and Development"
+),
+ambs_divisions = c("A&F", "IMP", "MSM", "PMO"),
+```
+
+- [ ] **Step 15: Verify snapshots against the policy PDF; commit**
+
+```bash
+Rscript -e "devtools::test(filter = 'policy')"
+```
+
+**MANDATORY review checklist before accepting snapshots:**
+
+Open `tests/testthat/_snaps/policy/` and confirm that each `.md` snapshot file matches the source PDF (`docs/sources/presentation-of-theses-policy-v12.pdf` if cached, or https://documents.manchester.ac.uk/display.aspx?DocID=7420) **character-for-character**, including:
+
+- [ ] Smart quotes vs straight quotes (the policy uses straight)
+- [ ] Em-dashes, hyphens, non-breaking spaces
+- [ ] Capitalization of "Copyright", "Intellectual Property", "Reproductions"
+- [ ] No accidental "I declare" prefix on declaration bodies (the partial adds that)
+
+Any drift here means every downstream user inherits non-compliant text. Treat snapshot acceptance as a publish step, not a refresh step.
+
+```bash
+git add R/policy.R tests/testthat/test-policy.R tests/testthat/_snaps/
+git commit -m "feat(policy): encode all Presentation of Theses Policy v12 constants"
+```
+
+---
+
+## Phase 2 — Internal utility helpers
+
+Small, pure functions used by everything else. Each TDD'd in isolation.
+
+### Task 2.1: `parse_qmd_yaml()` — read YAML front-matter from a .qmd file
+
+**Files:**
+- Create: `R/parse_qmd.R`
+- Test: `tests/testthat/test-parse_qmd.R`
+- Fixture: `tests/testthat/fixtures/single-qmd/sample.qmd`
+
+- [ ] **Step 1: Add fixture**
+
+`tests/testthat/fixtures/single-qmd/sample.qmd`:
+
+```
+---
+title: "Sample"
+author: "Jane Doe"
+uomthesis:
+  degree: PhD
+  year: 2027
+---
+
+# Heading
+
+Body text.
+```
+
+- [ ] **Step 2: Write failing test**
+
+```r
+test_that("parse_qmd_yaml returns parsed front-matter as a list", {
+  out <- parse_qmd_yaml(fixture_path("single-qmd", "sample.qmd"))
+  expect_type(out, "list")
+  expect_equal(out$title, "Sample")
+  expect_equal(out$uomthesis$degree, "PhD")
+  expect_equal(out$uomthesis$year, 2027)
+})
+
+test_that("parse_qmd_yaml returns empty list when no front-matter", {
+  tmp <- withr::local_tempfile(fileext = ".qmd")
+  writeLines("# Just a heading", tmp)
+  expect_equal(parse_qmd_yaml(tmp), list())
+})
+```
+
+- [ ] **Step 3: Implement**
+
+```r
+#' Parse the YAML front-matter of a .qmd file
+#' @param path Path to a .qmd file.
+#' @return A list, possibly empty.
+#' @keywords internal
+parse_qmd_yaml <- function(path) {
+  lines <- readLines(path, warn = FALSE, encoding = "UTF-8")
+  if (length(lines) < 2L || !grepl("^---\\s*$", lines[[1L]])) {
+    return(list())
+  }
+  end <- which(grepl("^---\\s*$", lines))[2L]
+  if (is.na(end)) return(list())
+  yaml::yaml.load(paste(lines[2:(end - 1L)], collapse = "\n"))
+}
+```
+
+- [ ] **Step 4: Run; pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'parse_qmd')"
+git add R/parse_qmd.R tests/testthat/test-parse_qmd.R tests/testthat/fixtures/single-qmd/
+git commit -m "feat(internal): parse_qmd_yaml() reads .qmd front-matter"
+```
+
+### Task 2.2: `classify_qmd_file()` — prelim / body / appendix / bibliography
+
+**Files:**
+- Modify: `R/parse_qmd.R`
+- Modify: `tests/testthat/test-parse_qmd.R`
+
+A file's role is determined by where it appears in `_quarto.yml`'s `book.chapters` vs `book.appendices` vs a top-level `prelim` list we will add. For v0.1 the convention is: `00-*.qmd` = prelim (abstract, acknowledgements, etc.); `appendix-*.qmd` = appendix; other listed chapters = body.
+
+- [ ] **Step 1: Test**
+
+```r
+test_that("classify_qmd_file uses filename convention", {
+  expect_equal(classify_qmd_file("chapters/00-abstract.qmd"), "prelim")
+  expect_equal(classify_qmd_file("chapters/01-intro.qmd"),    "body")
+  expect_equal(classify_qmd_file("chapters/appendix-a.qmd"),  "appendix")
+  expect_equal(classify_qmd_file("references.bib"),           "bibliography")
+})
+```
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Classify a .qmd/.bib file by role
+#' @param path File path or filename.
+#' @return One of "prelim", "body", "appendix", "bibliography".
+#' @keywords internal
+classify_qmd_file <- function(path) {
+  base <- basename(path)
+  if (grepl("\\.bib$", base, ignore.case = TRUE)) return("bibliography")
+  if (grepl("^appendix", base, ignore.case = TRUE)) return("appendix")
+  if (grepl("^0[0-9]-", base)) return("prelim")
+  "body"
+}
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+git add R/parse_qmd.R tests/testthat/test-parse_qmd.R
+git commit -m "feat(internal): classify_qmd_file() partitions files by role"
+```
+
+### Task 2.3: `locate_project()` — find the project root
+
+**Files:**
+- Create: `R/utils.R`
+- Test: `tests/testthat/test-utils.R`
+
+- [ ] **Step 1: Test**
+
+```r
+test_that("locate_project walks up to find _quarto.yml", {
+  root <- withr::local_tempdir()
+  fs::file_create(fs::path(root, "_quarto.yml"))
+  fs::dir_create(fs::path(root, "chapters"))
+  expect_equal(
+    normalizePath(locate_project(fs::path(root, "chapters"))),
+    normalizePath(root)
+  )
+})
+
+test_that("locate_project errors when no _quarto.yml found", {
+  empty <- withr::local_tempdir()
+  expect_error(locate_project(empty), class = "uomthesis_no_project")
+})
+```
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Find the nearest ancestor containing _quarto.yml
+#' @param start Starting directory (defaults to working directory).
+#' @return Absolute path to the project root.
+#' @keywords internal
+locate_project <- function(start = ".") {
+  cur <- normalizePath(start, mustWork = TRUE)
+  repeat {
+    if (file.exists(file.path(cur, "_quarto.yml"))) return(cur)
+    parent <- dirname(cur)
+    if (parent == cur) {
+      cli::cli_abort(
+        c("No Quarto project found.",
+          i = "Searched up from {.path {start}} but did not find a {.file _quarto.yml}."),
+        class = "uomthesis_no_project"
+      )
+    }
+    cur <- parent
+  }
+}
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+git add R/utils.R tests/testthat/test-utils.R
+git commit -m "feat(internal): locate_project() walks up to project root"
+```
+
+### Task 2.4: `read_uomthesis_metadata()` — extract the `uomthesis:` block from a project
+
+**Files:**
+- Modify: `R/parse_qmd.R`
+- Modify: `tests/testthat/test-parse_qmd.R`
+- Fixture: `tests/testthat/fixtures/mini-project/_quarto.yml`
+- Fixture: `tests/testthat/fixtures/mini-project/index.qmd`
+
+- [ ] **Step 1: Add fixture**
+
+`tests/testthat/fixtures/mini-project/_quarto.yml`:
+
+```yaml
+project:
+  type: book
+book:
+  chapters:
+    - index.qmd
+```
+
+`tests/testthat/fixtures/mini-project/index.qmd`:
+
+```
+---
+title: "Mini"
+uomthesis:
+  candidate:
+    forename: Jane
+    middle_initial: Q
+    surname: Doe
+  degree: PhD
+  faculty: Humanities
+  school: Alliance Manchester Business School
+  year: 2027
+  thesis_format: standard
+---
+```
+
+- [ ] **Step 2: Test**
+
+```r
+test_that("read_uomthesis_metadata reads the uomthesis block from index.qmd", {
+  meta <- read_uomthesis_metadata(fixture_path("mini-project"))
+  expect_equal(meta$degree, "PhD")
+  expect_equal(meta$candidate$surname, "Doe")
+})
+```
+
+- [ ] **Step 3: Implement**
+
+```r
+#' Read the uomthesis: metadata block from a project's index.qmd
+#' @param project_path Path to project root (contains _quarto.yml + index.qmd).
+#' @return A list of the uomthesis block; errors if missing.
+#' @keywords internal
+read_uomthesis_metadata <- function(project_path) {
+  idx <- file.path(project_path, "index.qmd")
+  if (!file.exists(idx)) {
+    cli::cli_abort(c(
+      "No {.file index.qmd} in {.path {project_path}}.",
+      i = "Did you run {.run uomthesis::create_thesis()}?"
+    ), class = "uomthesis_no_index")
+  }
+  fm <- parse_qmd_yaml(idx)
+  if (is.null(fm$uomthesis)) {
+    cli::cli_abort(c(
+      "{.file index.qmd} has no {.field uomthesis:} block.",
+      i = "Add the uomthesis metadata block; see {.run uomthesis::create_thesis()}."
+    ), class = "uomthesis_no_metadata")
+  }
+  fm$uomthesis
+}
+```
+
+- [ ] **Step 4: Pass; commit**
+
+```bash
+git add R/parse_qmd.R tests/testthat/test-parse_qmd.R tests/testthat/fixtures/mini-project/
+git commit -m "feat(internal): read_uomthesis_metadata() loads project YAML"
+```
+
+---
+
+## Phase 3 — Exported helpers
+
+### Task 3.1: `policy_info()`
+
+**Files:**
+- Create: `R/policy_info.R`
+- Test: `tests/testthat/test-policy_info.R`
+
+- [ ] **Step 1: Test**
+
+```r
+test_that("policy_info() returns the documented shape", {
+  p <- policy_info()
+  expect_s3_class(p, "uomthesis_policy_info")
+  expect_named(p, c("version", "dated", "next_review", "source_url"))
+  expect_equal(p$version, "12")
+  expect_equal(format(p$dated, "%Y-%m"), "2026-03")
+})
+
+test_that("print.uomthesis_policy_info produces a one-screen summary", {
+  expect_snapshot(print(policy_info()))
+})
+```
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Information about the Presentation of Theses Policy this package version targets
+#'
+#' Returns the policy version number, dated, next review date, and source URL.
+#' Use this to confirm whether a new policy revision is available.
+#'
+#' @return An object of class `uomthesis_policy_info` (a named list).
+#' @export
+#' @examples
+#' policy_info()
+policy_info <- function() {
+  p <- policy_constants()
+  out <- list(
+    version     = p$version,
+    dated       = p$dated,
+    next_review = p$next_review,
+    source_url  = p$source_url
+  )
+  class(out) <- c("uomthesis_policy_info", "list")
+  out
+}
+
+#' @export
+print.uomthesis_policy_info <- function(x, ...) {
+  cli::cli_h1("Presentation of Theses Policy")
+  cli::cli_bullets(c(
+    "*" = "Version:       {.val {x$version}}",
+    "*" = "Dated:         {.val {format(x$dated, '%B %Y')}}",
+    "*" = "Next review:   {.val {format(x$next_review, '%B %Y')}}",
+    "i" = "Source:        {.url {x$source_url}}"
+  ))
+  invisible(x)
+}
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'policy_info')"
+git add R/policy_info.R tests/testthat/test-policy_info.R tests/testthat/_snaps/ NAMESPACE man/
+git commit -m "feat: policy_info() exposes the targeted policy version"
+```
+
+### Task 3.2: Bundle CSL files and ship `SOURCES.yml`
+
+**Files:**
+- Create: `inst/csl/SOURCES.yml`
+- Create: `inst/csl/harvard-manchester.csl`
+- Create: `inst/csl/apa.csl`
+- Create: `inst/csl/chicago-author-date.csl`
+- Create: `inst/csl/mhra.csl`
+- Create: `inst/csl/vancouver.csl`
+- Create: `dev/refresh_csl.R`
+
+- [ ] **Step 1: Author `dev/refresh_csl.R`**
+
+This is a maintainer script (not part of the build) that downloads each CSL from a stable URL, computes sha256, and updates `SOURCES.yml`.
+
+```r
+# dev/refresh_csl.R
+# Re-download bundled CSL files and refresh inst/csl/SOURCES.yml.
+# Run interactively; commits are made by hand.
+
+sources <- list(
+  list(
+    name = "harvard-manchester",
+    url  = "https://raw.githubusercontent.com/citation-style-language/styles/master/harvard-cite-them-right.csl"
+  ),
+  list(
+    name = "apa",
+    url  = "https://raw.githubusercontent.com/citation-style-language/styles/master/apa.csl"
+  ),
+  list(
+    name = "chicago-author-date",
+    url  = "https://raw.githubusercontent.com/citation-style-language/styles/master/chicago-author-date.csl"
+  ),
+  list(
+    name = "mhra",
+    url  = "https://raw.githubusercontent.com/citation-style-language/styles/master/modern-humanities-research-association.csl"
+  ),
+  list(
+    name = "vancouver",
+    url  = "https://raw.githubusercontent.com/citation-style-language/styles/master/vancouver.csl"
+  )
+)
+
+today <- format(Sys.Date(), "%Y-%m-%d")
+manifest <- lapply(sources, function(s) {
+  dest <- file.path("inst", "csl", paste0(s$name, ".csl"))
+  download.file(s$url, dest, mode = "wb", quiet = TRUE)
+  raw <- readBin(dest, "raw", n = file.info(dest)$size)
+  list(name = s$name, url = s$url,
+       retrieved = today,
+       sha256 = paste(format(openssl::sha256(raw)), collapse = ""))
+})
+yaml::write_yaml(manifest, "inst/csl/SOURCES.yml")
+```
+
+- [ ] **Step 2: Run the script to populate inst/csl/**
+
+```bash
+Rscript dev/refresh_csl.R
+ls inst/csl/
+```
+Expected: five `.csl` files plus `SOURCES.yml`.
+
+- [ ] **Step 3: Commit the bundled CSLs and the manifest**
+
+```bash
+git add inst/csl/ dev/refresh_csl.R
+git commit -m "chore(csl): bundle five reference styles with pinned manifest"
+```
+
+### Task 3.3: `list_csl()` and `copy_csl()`
+
+**Files:**
+- Create: `R/csl.R`
+- Test: `tests/testthat/test-csl.R`
+
+- [ ] **Step 1: Test `list_csl()`**
+
+```r
+test_that("list_csl returns one row per bundled CSL", {
+  styles <- list_csl()
+  expect_s3_class(styles, "data.frame")
+  expect_named(styles, c("name", "url", "retrieved", "sha256"))
+  expect_setequal(styles$name,
+    c("harvard-manchester", "apa", "chicago-author-date", "mhra", "vancouver"))
+})
+```
+
+- [ ] **Step 2: Test `copy_csl()`**
+
+```r
+test_that("copy_csl copies a bundled file into a destination", {
+  tmp <- withr::local_tempdir()
+  path <- copy_csl("apa", to = tmp)
+  expect_true(file.exists(path))
+  expect_true(grepl("apa\\.csl$", path))
+})
+
+test_that("copy_csl errors on unknown style", {
+  tmp <- withr::local_tempdir()
+  expect_error(copy_csl("nope", to = tmp), class = "uomthesis_unknown_csl")
+})
+```
+
+- [ ] **Step 3: Implement**
+
+```r
+#' List bundled citation styles
+#'
+#' @return A data.frame with one row per bundled CSL.
+#' @export
+list_csl <- function() {
+  manifest_path <- system.file("csl", "SOURCES.yml", package = "uomthesis")
+  if (!nzchar(manifest_path)) {
+    cli::cli_abort("CSL manifest not found in installed package.")
+  }
+  m <- yaml::read_yaml(manifest_path)
+  do.call(rbind, lapply(m, as.data.frame, stringsAsFactors = FALSE))
+}
+
+#' Copy a bundled CSL into a directory
+#'
+#' @param name One of the names from `list_csl()$name`.
+#' @param to   Destination directory (created if missing).
+#' @return Invisible path to the copied file.
+#' @export
+copy_csl <- function(name, to = ".") {
+  styles <- list_csl()
+  if (!name %in% styles$name) {
+    cli::cli_abort(
+      c("Unknown CSL {.val {name}}.",
+        i = "Use {.code list_csl()$name} to see the bundled styles."),
+      class = "uomthesis_unknown_csl"
+    )
+  }
+  src <- system.file("csl", paste0(name, ".csl"), package = "uomthesis")
+  fs::dir_create(to)
+  dest <- fs::path(to, paste0(name, ".csl"))
+  fs::file_copy(src, dest, overwrite = TRUE)
+  invisible(as.character(dest))
+}
+```
+
+- [ ] **Step 4: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'csl')"
+git add R/csl.R tests/testthat/test-csl.R NAMESPACE man/
+git commit -m "feat: list_csl() and copy_csl() expose bundled styles"
+```
+
+### Task 3.4: `validate_metadata()` — the YAML linter
+
+**Files:**
+- Create: `R/validate_metadata.R`
+- Test: `tests/testthat/test-validate_metadata.R`
+
+- [ ] **Step 1: Test happy path**
+
+```r
+test_that("validate_metadata passes for the mini fixture", {
+  res <- validate_metadata(fixture_path("mini-project"))
+  expect_s3_class(res, "uomthesis_metadata_check")
+  expect_true(res$ok)
+  expect_length(res$findings, 0)
+})
+```
+
+- [ ] **Step 2: Test missing required field**
+
+```r
+test_that("validate_metadata reports missing required field", {
+  root <- withr::local_tempdir()
+  fs::file_create(fs::path(root, "_quarto.yml"))
+  writeLines(c(
+    "---", "uomthesis:", "  degree: PhD", "---"
+  ), fs::path(root, "index.qmd"))
+
+  res <- validate_metadata(root)
+  expect_false(res$ok)
+  rule_ids <- vapply(res$findings, `[[`, character(1), "rule_id")
+  expect_true("metadata-complete" %in% rule_ids)
+})
+```
+
+- [ ] **Step 3: Test allowed-set violation**
+
+```r
+test_that("validate_metadata flags out-of-set values", {
+  root <- withr::local_tempdir()
+  fs::file_create(fs::path(root, "_quarto.yml"))
+  writeLines(c(
+    "---", "uomthesis:",
+    "  candidate:", "    forename: J", "    middle_initial: Q", "    surname: D",
+    "  degree: DPhil",  # invalid
+    "  faculty: Humanities",
+    "  school: Alliance Manchester Business School",
+    "  year: 2027",
+    "  thesis_format: standard",
+    "---"
+  ), fs::path(root, "index.qmd"))
+
+  res <- validate_metadata(root)
+  expect_false(res$ok)
+  rule_ids <- vapply(res$findings, `[[`, character(1), "rule_id")
+  expect_true("degree-faculty-school" %in% rule_ids)
+})
+```
+
+- [ ] **Step 4: Implement**
+
+```r
+#' Validate the uomthesis: YAML block in a project
+#'
+#' Runs the metadata-level checks (a subset of `check_thesis()`'s source-phase
+#' rules) without touching any chapter content.
+#'
+#' @param project Path to project root.
+#' @return An object of class `uomthesis_metadata_check`.
+#' @export
+validate_metadata <- function(project = ".") {
+  root <- locate_project(project)
+  meta <- read_uomthesis_metadata(root)
+  p <- policy_constants()
+  findings <- list()
+
+  required <- c("candidate.surname", "degree", "faculty", "school",
+                "year", "thesis_format")
+  for (key in required) {
+    parts <- strsplit(key, "\\.")[[1]]
+    val <- Reduce(function(acc, k) if (is.null(acc)) NULL else acc[[k]],
+                  parts, init = meta)
+    if (is.null(val) || identical(val, "")) {
+      findings <- c(findings, list(list(
+        rule_id    = "metadata-complete",
+        severity   = "error",
+        message    = glue::glue("Required field {.field {key}} is missing or empty."),
+        location   = list(file = "index.qmd"),
+        policy_ref = "§8.1.b",
+        hint       = "Add the field under the uomthesis: block in index.qmd."
+      )))
+    }
+  }
+
+  if (!is.null(meta$degree) && !meta$degree %in% p$allowed_degrees) {
+    findings <- c(findings, list(list(
+      rule_id    = "degree-faculty-school",
+      severity   = "error",
+      message    = glue::glue("Degree {.val {meta$degree}} is not in the allowed set."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "§8.1.b",
+      hint       = glue::glue("Use one of: {paste(p$allowed_degrees, collapse = ', ')}.")
+    )))
+  }
+  if (!is.null(meta$faculty) && !meta$faculty %in% p$allowed_faculties) {
+    findings <- c(findings, list(list(
+      rule_id    = "degree-faculty-school",
+      severity   = "error",
+      message    = glue::glue("Faculty {.val {meta$faculty}} is not in the allowed set."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "§8.1.b",
+      hint       = glue::glue("Use one of: {paste(p$allowed_faculties, collapse = ', ')}.")
+    )))
+  }
+  if (!is.null(meta$year)) {
+    if (!is.numeric(meta$year) || meta$year < 2000 || meta$year > 2100) {
+      findings <- c(findings, list(list(
+        rule_id    = "year-not-month",
+        severity   = "error",
+        message    = "year must be an integer between 2000 and 2100.",
+        location   = list(file = "index.qmd"),
+        policy_ref = "§8.1.b",
+        hint       = "year: 2027 (no month)."
+      )))
+    }
+  }
+
+  out <- list(ok = length(findings) == 0, findings = findings)
+  class(out) <- c("uomthesis_metadata_check", "list")
+  out
+}
+```
+
+- [ ] **Step 5: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'validate_metadata')"
+git add R/validate_metadata.R tests/testthat/test-validate_metadata.R NAMESPACE man/
+git commit -m "feat: validate_metadata() lints the uomthesis: YAML block"
+```
+
+---
+
+## Phase 4 — `word_count()`
+
+### Task 4.1: `word_count_text()` — internal text counter
+
+**Files:**
+- Modify: `R/parse_qmd.R`
+- Modify: `tests/testthat/test-parse_qmd.R`
+
+- [ ] **Step 1: Test**
+
+```r
+test_that("word_count_text counts words after stripping YAML/code/equations", {
+  text <- c(
+    "---", "title: Sample", "---", "",
+    "# Heading",
+    "",
+    "This is a sentence with seven words.",
+    "",
+    "```{r}", "x <- 1 + 1", "```",
+    "",
+    "$$E = mc^2$$",
+    "",
+    "Another short line."
+  )
+  expect_equal(word_count_text(text), 7 + 3)  # "This is ... words" + "Another short line"
+})
+```
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Count words in body text, stripping YAML, code chunks, and equations
+#' @param lines Character vector of lines.
+#' @return Integer count.
+#' @keywords internal
+word_count_text <- function(lines) {
+  lines <- strip_yaml(lines)
+  lines <- strip_code_chunks(lines)
+  lines <- strip_display_math(lines)
+  body  <- paste(lines, collapse = " ")
+  body  <- gsub("#+\\s.*", "", body)            # drop heading markers' content? no — count them
+  # Words: contiguous runs of non-whitespace, non-punctuation-only tokens
+  tokens <- strsplit(body, "\\s+")[[1]]
+  tokens <- tokens[nzchar(tokens) & grepl("[A-Za-z0-9]", tokens)]
+  length(tokens)
+}
+
+strip_yaml <- function(lines) {
+  if (length(lines) < 2L || !grepl("^---\\s*$", lines[[1L]])) return(lines)
+  end <- which(grepl("^---\\s*$", lines))[2L]
+  if (is.na(end)) return(lines)
+  lines[-(1:end)]
+}
+
+strip_code_chunks <- function(lines) {
+  in_chunk <- FALSE
+  keep <- logical(length(lines))
+  for (i in seq_along(lines)) {
+    if (grepl("^```", lines[[i]])) {
+      in_chunk <- !in_chunk
+      next
+    }
+    keep[[i]] <- !in_chunk
+  }
+  lines[keep]
+}
+
+strip_display_math <- function(lines) {
+  in_math <- FALSE
+  keep <- logical(length(lines))
+  for (i in seq_along(lines)) {
+    if (grepl("^\\$\\$", lines[[i]])) {
+      in_math <- !in_math
+      next
+    }
+    keep[[i]] <- !in_math
+  }
+  lines[keep]
+}
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+git add R/parse_qmd.R tests/testthat/test-parse_qmd.R
+git commit -m "feat(internal): word_count_text() strips YAML/code/math"
+```
+
+### Task 4.2: `word_count()` — public counter
+
+**Files:**
+- Create: `R/word_count.R`
+- Test: `tests/testthat/test-word_count.R`
+- Fixture: `tests/testthat/fixtures/wc-project/_quarto.yml`
+- Fixture: `tests/testthat/fixtures/wc-project/index.qmd`
+- Fixture: `tests/testthat/fixtures/wc-project/chapters/00-abstract.qmd`
+- Fixture: `tests/testthat/fixtures/wc-project/chapters/01-intro.qmd`
+
+- [ ] **Step 1: Add fixture project (small, with 1 prelim and 1 body chapter)**
+
+`_quarto.yml`:
+```yaml
+project:
+  type: book
+book:
+  chapters:
+    - index.qmd
+    - chapters/00-abstract.qmd
+    - chapters/01-intro.qmd
+format:
+  uomthesis-standard-pdf: default
+```
+
+`index.qmd`:
+```
+---
+title: WC test
+uomthesis:
+  candidate:
+    forename: J
+    middle_initial: Q
+    surname: D
+  degree: PhD
+  faculty: Humanities
+  school: Alliance Manchester Business School
+  year: 2027
+  thesis_format: standard
+---
+```
+
+`chapters/00-abstract.qmd`:
+```
+# Abstract
+
+This is the abstract.
+```
+
+`chapters/01-intro.qmd`:
+```
+# Introduction
+
+One two three four five six seven eight nine ten.
+```
+
+- [ ] **Step 2: Test**
+
+```r
+test_that("word_count counts body only, excludes prelim", {
+  wc <- word_count(fixture_path("wc-project"))
+  expect_s3_class(wc, "uomthesis_word_count")
+  expect_equal(wc$total, 10)  # only chapters/01-intro.qmd counts
+  expect_equal(wc$cap, 80000)
+  expect_equal(wc$format, "standard")
+  expect_equal(wc$degree, "PhD")
+  expect_false(wc$over)
+  expect_named(wc$by_chapter, "chapters/01-intro.qmd")
+})
+
+test_that("print.uomthesis_word_count produces a one-screen summary", {
+  expect_snapshot(print(word_count(fixture_path("wc-project"))))
+})
+```
+
+- [ ] **Step 3: Implement**
+
+```r
+#' Count main-text words in a uomthesis project
+#'
+#' Counts words per the Presentation of Theses Policy §4.6 fn. 1 definition
+#' of "main text" (core chapters + footnotes/endnotes; excludes preliminary
+#' pages, bibliography, and appendices).
+#'
+#' @param project Path to project root (containing _quarto.yml).
+#' @param rendered_pdf Optional path to a rendered PDF; if supplied, counting
+#'   is done from the PDF (matches what an examiner sees).
+#' @param warn_at Fraction of cap at which a warning is printed (default 0.9).
+#' @param error_at Optional fraction of cap at which an error is raised.
+#' @return An object of class `uomthesis_word_count`.
+#' @export
+word_count <- function(project = ".",
+                       rendered_pdf = NULL,
+                       warn_at = 0.9,
+                       error_at = NULL) {
+  root <- locate_project(project)
+  meta <- read_uomthesis_metadata(root)
+  qy   <- yaml::read_yaml(file.path(root, "_quarto.yml"))
+  p    <- policy_constants()
+
+  fmt    <- meta$thesis_format %||% "standard"
+  degree <- meta$degree %||% "PhD"
+  cap <- p$word_caps[[fmt]][[degree]] %||% NA_integer_
+
+  chapters <- as.character(qy$book$chapters %||% c())
+  by_chapter <- list()
+  for (f in chapters) {
+    role <- classify_qmd_file(f)
+    if (role != "body") next
+    abs <- file.path(root, f)
+    if (!file.exists(abs)) next
+    by_chapter[[f]] <- word_count_text(readLines(abs, warn = FALSE, encoding = "UTF-8"))
+  }
+  total <- sum(unlist(by_chapter))
+
+  over <- !is.na(cap) && total > cap
+  out <- list(
+    total      = total,
+    cap        = cap,
+    by_chapter = unlist(by_chapter),
+    format     = fmt,
+    degree     = degree,
+    over       = over
+  )
+  class(out) <- c("uomthesis_word_count", "list")
+
+  if (!is.na(cap)) {
+    if (!is.null(error_at) && total >= error_at * cap) {
+      cli::cli_abort(c("Word count {.val {total}} exceeds {.val {error_at * 100}}% of cap {.val {cap}}."))
+    } else if (total >= warn_at * cap) {
+      cli::cli_warn(c("Word count {.val {total}} is {.val {round(100 * total/cap)}}% of cap {.val {cap}}."))
+    }
+  }
+  out
+}
+
+#' @export
+print.uomthesis_word_count <- function(x, ...) {
+  cli::cli_h1("Word count — {x$format} {x$degree}")
+  pct <- if (!is.na(x$cap)) round(100 * x$total / x$cap) else NA
+  cli::cli_bullets(c(
+    "*" = "Total:    {.val {x$total}}",
+    "*" = "Cap:      {.val {x$cap}}",
+    "*" = "Percent:  {.val {pct}}%"
+  ))
+  if (length(x$by_chapter)) {
+    cli::cli_h2("By chapter")
+    for (nm in names(x$by_chapter)) {
+      cli::cli_li("{.path {nm}}: {.val {x$by_chapter[[nm]]}}")
+    }
+  }
+  invisible(x)
+}
+
+`%||%` <- function(a, b) if (is.null(a)) b else a
+```
+
+- [ ] **Step 4: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'word_count')"
+git add R/word_count.R tests/testthat/test-word_count.R tests/testthat/fixtures/wc-project/ tests/testthat/_snaps/ NAMESPACE man/
+git commit -m "feat: word_count() counts main-text words per policy §4.6 fn.1"
+```
+
+---
+
+## Phase 5 — Validator
+
+### Task 5.1: Rule registry and context builder
+
+**Files:**
+- Create: `R/check_rules.R`
+- Test: `tests/testthat/test-check_rules.R`
+
+- [ ] **Step 1: Test the registry shape**
+
+```r
+test_that("rule_registry returns a list of properly-shaped rules", {
+  rules <- rule_registry()
+  expect_true(length(rules) > 0)
+  for (r in rules) {
+    expect_named(r, c("id", "policy_ref", "phase", "formats",
+                      "severity", "check", "rationale"),
+                 ignore.order = TRUE)
+    expect_true(r$phase %in% c("source", "pdf"))
+    expect_true(r$severity %in% c("error", "warning"))
+    expect_true(is.function(r$check))
+  }
+})
+
+test_that("rule_registry has unique IDs", {
+  ids <- vapply(rule_registry(), `[[`, character(1), "id")
+  expect_false(any(duplicated(ids)))
+})
+```
+
+- [ ] **Step 2: Stub registry**
+
+```r
+#' The registered set of compliance rules
+#' @return A list of rule definitions.
+#' @keywords internal
+rule_registry <- function() {
+  list(
+    # Filled in by the per-rule tasks below.
+  )
+}
+
+#' Build the context object passed to each check function
+#' @keywords internal
+build_ctx <- function(project_path, rendered_pdf = NULL) {
+  meta <- read_uomthesis_metadata(project_path)
+  qy   <- yaml::read_yaml(file.path(project_path, "_quarto.yml"))
+  chapters <- as.character(qy$book$chapters %||% c())
+  qmd_files <- stats::setNames(
+    lapply(chapters, function(f) {
+      list(path = f, role = classify_qmd_file(f))
+    }),
+    chapters
+  )
+  list(
+    project_path = project_path,
+    metadata     = meta,
+    quarto_yaml  = qy,
+    qmd_files    = qmd_files,
+    qmd_text     = new.env(parent = emptyenv()),  # lazy cache
+    pdf_pages    = NULL,                          # populated in PDF phase
+    pdf_toc      = NULL,
+    policy       = policy_constants()
+  )
+}
+
+ctx_read <- function(ctx, file) {
+  abs <- file.path(ctx$project_path, file)
+  if (is.null(ctx$qmd_text[[file]])) {
+    ctx$qmd_text[[file]] <- readLines(abs, warn = FALSE, encoding = "UTF-8")
+  }
+  ctx$qmd_text[[file]]
+}
+```
+
+- [ ] **Step 3: Pass (the test just checks shape; empty list passes shape but not "length > 0" — adjust)**
+
+Actually the test expects `length(rules) > 0`. Add a single placeholder rule that will be removed/replaced by Task 5.2:
+
+Skip the placeholder. Change the test to `expect_true(length(rules) >= 0)` for now and tighten back to `> 0` once the first real rule lands in Task 5.2.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add R/check_rules.R tests/testthat/test-check_rules.R
+git commit -m "feat(validator): rule registry stub and ctx builder"
+```
+
+**Note on Tasks 5.3–5.15 scope.** Each is its own task following the shape of 5.2 (fixture → test → rule implementation → commit). Expect ~13 additional task expansions before the orchestrator (Task 5.16) lands. The list below describes the rule under test; the implementation steps are the same for each: write a fixture that violates the rule, write a `get_rule("<id>")$check(...)` test that asserts the finding, implement `rule_<snake_id>()`, append it to `rule_registry()`, run the test, and commit.
+
+### Task 5.2: Rule — `metadata-complete`
+
+**Files:**
+- Modify: `R/check_rules.R`
+- Modify: `tests/testthat/test-check_rules.R`
+- Fixture: `tests/testthat/fixtures/check-metadata-incomplete/`
+
+- [ ] **Step 1: Fixture (project with missing `surname`)**
+
+`tests/testthat/fixtures/check-metadata-incomplete/_quarto.yml`: same shape as `mini-project`.
+`tests/testthat/fixtures/check-metadata-incomplete/index.qmd`:
+```
+---
+uomthesis:
+  candidate:
+    forename: J
+    middle_initial: Q
+  degree: PhD
+  faculty: Humanities
+  school: Alliance Manchester Business School
+  year: 2027
+  thesis_format: standard
+---
+```
+
+- [ ] **Step 2: Test**
+
+```r
+test_that("metadata-complete rule fires for missing surname", {
+  rule <- get_rule("metadata-complete")
+  ctx  <- build_ctx(fixture_path("check-metadata-incomplete"))
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+  expect_equal(finding$rule_id, "metadata-complete")
+  expect_equal(finding$severity, "error")
+})
+```
+
+- [ ] **Step 3: Implement**
+
+In `R/check_rules.R`, add to `rule_registry()`:
+
+```r
+rule_metadata_complete <- function() list(
+  id         = "metadata-complete",
+  policy_ref = "§8.1.b",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    required <- c("candidate.forename", "candidate.surname",
+                  "degree", "faculty", "school", "year", "thesis_format")
+    missing  <- character(0)
+    for (key in required) {
+      parts <- strsplit(key, "\\.")[[1]]
+      val <- Reduce(function(a, k) if (is.null(a)) NULL else a[[k]],
+                    parts, init = ctx$metadata)
+      if (is.null(val) || identical(val, "")) missing <- c(missing, key)
+    }
+    if (!length(missing)) return(NULL)
+    list(
+      rule_id    = "metadata-complete",
+      severity   = "error",
+      message    = glue::glue(
+        "Required field(s) missing from uomthesis: block: {paste(missing, collapse = ', ')}."
+      ),
+      location   = list(file = "index.qmd"),
+      policy_ref = "§8.1.b",
+      hint       = "Re-run uomthesis::create_thesis() or add the missing keys."
+    )
+  },
+  rationale  = "Title-page assembly requires the candidate's full name, degree, faculty, school, year, and thesis format."
+)
+
+get_rule <- function(id) {
+  Filter(function(r) r$id == id, rule_registry())[[1]]
+}
+```
+
+Make `rule_registry()` return `list(rule_metadata_complete())`.
+
+- [ ] **Step 4: Pass; commit**
+
+```bash
+Rscript -e "devtools::test(filter = 'check_rules')"
+git add R/check_rules.R tests/testthat/test-check_rules.R tests/testthat/fixtures/check-metadata-incomplete/
+git commit -m "feat(validator): metadata-complete rule"
+```
+
+### Tasks 5.3 — 5.13: Remaining source-phase rules
+
+For each rule below, follow the same shape as 5.2:
+
+1. Add a fixture project that violates the rule (and optionally one that satisfies it).
+2. Write a test that calls `get_rule("rule-id")$check(build_ctx(fixture_path(...)))` and asserts the finding shape.
+3. Implement `rule_<snake_id>()` and add it to `rule_registry()`.
+4. Run; pass; commit with message `feat(validator): <rule-id> rule`.
+
+Implement in this order (each is one task):
+
+- **Task 5.3** — `degree-faculty-school` (§8.1.b): check `degree ∈ allowed_degrees`, `faculty ∈ allowed_faculties`, `school ∈ allowed_schools`.
+- **Task 5.4** — `year-not-month` (§8.1.b): `meta$year` is integer in 2000–2100.
+- **Task 5.5** — `title-page-statement` (§8.1.b): the title-page partial contains the policy's `title_page_statement` template literally (with `{degree}`/`{faculty}` interpolated correctly).
+- **Task 5.6** — `prelim-order` (§8.1): the order of files in `_quarto.yml`'s `book.chapters` with `role == "prelim"` matches `policy_constants()$required_prelims`.
+- **Task 5.7** — `declaration-text` (§8.1.f): the declaration partial body matches `policy_constants()$declaration_either` (or `_or` when `meta$declaration$variant == "or"`) verbatim. Use `tools::Rdiff`-style line-by-line comparison; truncate diff in the message to ≤5 lines.
+- **Task 5.8** — `copyright-text` (§8.1.g): all four `policy_constants()$copyright_bullets` are present verbatim in the copyright partial.
+- **Task 5.9** — `copyright-author-match` (§8.1.g): the author name as it appears in bullet i matches `meta$candidate$forename`/`middle_initial`/`surname`.
+- **Task 5.10** — `abstract-one-page` (§8.1.e): heuristic — the `00-abstract.qmd` body is < 350 words. Severity `warning` (the definitive check is PDF-phase).
+- **Task 5.11** — `font-allowed`, `font-engine-compat`, `linespacing-allowed` (§7.1): three sibling rules covering YAML `mainfont`, `pdf-engine`, and `linestretch`. Bundle into one task with three sub-tests since they share fixture shape.
+- **Task 5.12** — `ai-disclosure-shape` (§9.1.d): if `ai_disclosure.include` is TRUE, `tools` is a non-empty list.
+- **Task 5.13** — `journal-rationale-present` and `journal-contribution-stmts` (§13.10, §13.3): two journal-only rules. Tagged `formats = "journal"` so they don't run for standard-format projects.
+- **Task 5.14** — `csl-bundled-or-path-exists` and `bibliography-exists` (§7.2): both check file resolution from `_quarto.yml`.
+- **Task 5.15** — `english-language` (§6.1): `lang:` is `"en"` / `"en-GB"`. Severity `warning`.
+
+After Task 5.15, run the full rule-test file:
+
+```bash
+Rscript -e "devtools::test(filter = 'check_rules')"
+```
+
+All rules should pass. Commit any straggling fixes:
+
+```bash
+git commit -am "test(validator): all source-phase rules green"
+```
+
+### Task 5.16: `check_thesis()` orchestrator
+
+**Files:**
+- Create: `R/check_thesis.R`
+- Test: `tests/testthat/test-check_thesis.R`
+
+- [ ] **Step 1: Test against a known-clean fixture**
+
+Reuse `mini-project` (Phase 2) but extend it so every required field is present.
+
+```r
+test_that("check_thesis returns ok on a compliant minimal project", {
+  res <- check_thesis(fixture_path("mini-project"), format = "console")
+  expect_s3_class(res, "uomthesis_check_report")
+  expect_true(res$ok)
+  expect_length(res$findings, 0)
+})
+
+test_that("check_thesis aggregates findings from multiple rules", {
+  res <- check_thesis(fixture_path("check-metadata-incomplete"), format = "console")
+  expect_false(res$ok)
+  expect_true(length(res$findings) > 0)
+})
+```
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Check a uomthesis project against the Presentation of Theses Policy
+#'
+#' @param project Path to project root.
+#' @param rendered_pdf Optional path to a rendered PDF; when supplied, PDF-phase
+#'   rules also run.
+#' @param rules Optional character vector of rule IDs to restrict the run.
+#' @param format Output format: console, markdown, or json.
+#' @param fail_on Threshold for raising an error after reporting:
+#'   "none" (informational), "warning", or "error".
+#' @return Invisibly, an object of class `uomthesis_check_report`.
+#' @export
+check_thesis <- function(project = ".",
+                         rendered_pdf = NULL,
+                         rules  = NULL,
+                         format = c("console", "markdown", "json"),
+                         fail_on = c("none", "warning", "error")) {
+  format  <- match.arg(format)
+  fail_on <- match.arg(fail_on)
+  root    <- locate_project(project)
+  ctx     <- build_ctx(root, rendered_pdf = rendered_pdf)
+
+  fmt <- ctx$metadata$thesis_format %||% "standard"
+  applicable <- Filter(function(r) {
+    (is.null(rules) || r$id %in% rules) &&
+      fmt %in% r$formats &&
+      (r$phase == "source" || !is.null(rendered_pdf))
+  }, rule_registry())
+
+  findings <- list()
+  for (r in applicable) {
+    f <- tryCatch(r$check(ctx),
+                  error = function(e) list(
+                    rule_id = r$id, severity = "error",
+                    message = paste("Rule check errored:", conditionMessage(e)),
+                    location = list(), policy_ref = r$policy_ref, hint = ""
+                  ))
+    if (!is.null(f)) findings <- c(findings, list(f))
+  }
+
+  report <- list(
+    ok       = length(findings) == 0,
+    findings = findings,
+    n_rules  = length(applicable),
+    format   = fmt
+  )
+  class(report) <- c("uomthesis_check_report", "list")
+
+  render_check_report(report, format = format)
+
+  severities <- vapply(findings, `[[`, character(1), "severity")
+  if (fail_on == "warning" && any(severities %in% c("warning", "error"))) {
+    cli::cli_abort("uomthesis::check_thesis() found warnings or errors.")
+  }
+  if (fail_on == "error" && any(severities == "error")) {
+    cli::cli_abort("uomthesis::check_thesis() found errors.")
+  }
+  invisible(report)
+}
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'check_thesis')"
+git add R/check_thesis.R tests/testthat/test-check_thesis.R NAMESPACE man/
+git commit -m "feat: check_thesis() orchestrates source-phase rule runs"
+```
+
+### Task 5.17: `render_check_report()` — console / markdown / JSON
+
+**Files:**
+- Create: `R/check_report.R`
+- Test: `tests/testthat/test-check_report.R`
+
+- [ ] **Step 1: Snapshot tests for each format**
+
+```r
+test_that("console report formats findings with cli", {
+  res <- check_thesis(fixture_path("check-metadata-incomplete"), format = "console")
+  expect_snapshot(render_check_report(res, format = "console"))
+})
+
+test_that("markdown report is committable", {
+  res <- check_thesis(fixture_path("check-metadata-incomplete"), format = "console")
+  expect_snapshot(render_check_report(res, format = "markdown"))
+})
+
+test_that("json report is parseable", {
+  res <- check_thesis(fixture_path("check-metadata-incomplete"), format = "console")
+  out <- render_check_report(res, format = "json")
+  parsed <- jsonlite::fromJSON(out, simplifyVector = FALSE)
+  expect_named(parsed, c("ok", "findings", "n_rules", "format"))
+})
+```
+
+(`jsonlite` should be added to Suggests in DESCRIPTION at this point — modify DESCRIPTION too.)
+
+- [ ] **Step 2: Implement**
+
+```r
+#' Render a check report
+#' @param report A `uomthesis_check_report`.
+#' @param format "console" | "markdown" | "json".
+#' @return Invisible character (for markdown/json); console returns invisibly.
+#' @keywords internal
+render_check_report <- function(report, format = c("console", "markdown", "json")) {
+  format <- match.arg(format)
+  switch(format,
+    console  = render_console(report),
+    markdown = render_markdown(report),
+    json     = render_json(report)
+  )
+}
+
+render_console <- function(report) {
+  errors   <- Filter(function(f) f$severity == "error", report$findings)
+  warnings <- Filter(function(f) f$severity == "warning", report$findings)
+  cli::cli_h1("uomthesis::check_thesis() — {report$format}")
+  cli::cli_bullets(c(
+    "v" = "{.val {report$n_rules - length(report$findings)}} rules passed",
+    "x" = "{.val {length(errors)}} errors",
+    "!" = "{.val {length(warnings)}} warnings"
+  ))
+  if (length(errors)) {
+    cli::cli_h2("Errors")
+    for (f in errors) {
+      cli::cli_li("{.strong {f$rule_id}}  {.emph {f$policy_ref}}")
+      cli::cli_text("{f$message}")
+      cli::cli_alert_info("{f$hint}")
+    }
+  }
+  if (length(warnings)) {
+    cli::cli_h2("Warnings")
+    for (f in warnings) {
+      cli::cli_li("{.strong {f$rule_id}}  {.emph {f$policy_ref}}")
+      cli::cli_text("{f$message}")
+      cli::cli_alert_info("{f$hint}")
+    }
+  }
+  invisible(report)
+}
+
+render_markdown <- function(report) {
+  lines <- c(
+    paste0("# uomthesis check report — ", report$format),
+    "",
+    paste0("- Rules run: ", report$n_rules),
+    paste0("- Findings: ", length(report$findings)),
+    ""
+  )
+  for (f in report$findings) {
+    lines <- c(lines,
+      paste0("## ", f$rule_id, " (", f$severity, " — ", f$policy_ref, ")"),
+      "",
+      paste0(f$message),
+      "",
+      paste0("**Fix:** ", f$hint),
+      ""
+    )
+  }
+  out <- paste(lines, collapse = "\n")
+  writeLines(lines, "check-report.md")
+  invisible(out)
+}
+
+render_json <- function(report) {
+  rlang::check_installed("jsonlite", reason = "JSON output requires jsonlite.")
+  out <- jsonlite::toJSON(list(
+    ok       = report$ok,
+    findings = report$findings,
+    n_rules  = report$n_rules,
+    format   = report$format
+  ), auto_unbox = TRUE, pretty = TRUE)
+  invisible(unclass(out))
+}
+```
+
+Also append `jsonlite` to Suggests in DESCRIPTION.
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'check_report')"
+git add R/check_report.R tests/testthat/test-check_report.R tests/testthat/_snaps/ DESCRIPTION
+git commit -m "feat(validator): console/markdown/JSON report renderers"
+```
+
+---
+
+## Phase 6 — Quarto extensions
+
+### Task 6.1: `_shared/` partials (the policy-mandated text)
+
+**Files:**
+- Create: `inst/quarto/_extensions/_shared/title-page.tex`
+- Create: `inst/quarto/_extensions/_shared/declaration.tex`
+- Create: `inst/quarto/_extensions/_shared/copyright.tex`
+- Create: `inst/quarto/_extensions/_shared/ai-disclosure.tex`
+- Create: `inst/quarto/_extensions/_shared/theme.scss`
+
+Each partial uses Pandoc variables (e.g., `$title$`, `$author.surname$`, `$uomthesis.degree$`) populated from the `uomthesis:` metadata block at render time.
+
+- [ ] **Step 1: Write `title-page.tex`**
+
+```latex
+\begin{titlepage}
+\centering
+\vspace*{6cm}
+{\Large\bfseries $title$\par}
+\vspace{3cm}
+A thesis submitted to The University of Manchester\\
+for the degree of $uomthesis.degree$\\
+in the Faculty of $uomthesis.faculty$.
+\vspace{3cm}
+$uomthesis.year$
+\vfill
+$uomthesis.candidate.forename$ $uomthesis.candidate.middle_initial$. $uomthesis.candidate.surname$
+$if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif$\\[1ex]
+$uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
+\end{titlepage}
+```
+
+- [ ] **Step 2: Write `declaration.tex`**
+
+```latex
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+
+$if(uomthesis.declaration.variant)$
+$if(uomthesis.declaration.variant == "or")$
+I declare what portion of the work referred to in this thesis has been
+submitted in support of an application for another degree or
+qualification of this or any other university or other institute
+of learning. This should include reference to joint authorship of
+published materials which might have been included in a thesis
+submitted by another student to this university or any other
+university or other institute of learning.
+
+$uomthesis.declaration.joint_authorship_details$
+$else$
+I declare that no portion of the work referred to in this thesis has been
+submitted in support of an application for another degree or
+qualification of this or any other university or other institute
+of learning.
+$endif$
+$else$
+I declare that no portion of the work referred to in this thesis has been
+submitted in support of an application for another degree or
+qualification of this or any other university or other institute
+of learning.
+$endif$
+```
+
+- [ ] **Step 3: Write `copyright.tex`**
+
+Each of the four bullets is rendered as a paragraph, verbatim from `policy_constants()$copyright_bullets`. Use a single bulleted list:
+
+```latex
+\chapter*{Copyright Statement}
+\addcontentsline{toc}{chapter}{Copyright Statement}
+
+\begin{itemize}
+\item The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the ``Copyright'') and they have given the University of Manchester certain rights to use such Copyright, including for administrative purposes.
+
+\item Copies of this thesis, either in full or in extracts and whether in hard or electronic copy, may be made only in accordance with the Copyright, Designs and Patents Act 1988 (as amended) and regulations issued under it or, where appropriate, in accordance with licensing agreements which the University has from time to time. This page must form part of any such copies made.
+
+\item The ownership of certain Copyright, patents, designs, trademarks and other intellectual property (the ``Intellectual Property'') and any reproductions of copyright works in the thesis, for example graphs and tables (``Reproductions''), which may be described in this thesis, may not be owned by the author and may be owned by third parties. Such Intellectual Property and Reproductions cannot and must not be made available for use without the prior written permission of the owner(s) of the relevant Intellectual Property and/or Reproductions.
+
+\item Further information on the conditions under which disclosure, publication and commercialisation of this thesis, the Copyright and any Intellectual Property and/or Reproductions described in it may take place is available in the University IP Policy, in any relevant Thesis restriction declarations deposited in the University Library, the University Library's regulations and in the University's policy on the Presentation of Theses.
+\end{itemize}
+```
+
+- [ ] **Step 4: Write `ai-disclosure.tex`**
+
+```latex
+$if(uomthesis.ai_disclosure.include)$
+\chapter*{Generative AI Disclosure}
+\addcontentsline{toc}{chapter}{Generative AI Disclosure}
+
+$if(uomthesis.ai_disclosure.description)$
+$uomthesis.ai_disclosure.description$
+$else$
+Generative AI Disclosure: I used $for(uomthesis.ai_disclosure.tools)$$uomthesis.ai_disclosure.tools$$sep$, $endfor$ to assist in idea generation, image creation, and for feedback on grammar and content. I implemented some of its recommendations.
+$endif$
+$endif$
+```
+
+- [ ] **Step 5: Write `theme.scss` (minimal HTML look)**
+
+```scss
+/*-- scss:defaults --*/
+$primary: #5b1a8c;     // UoM purple — neutral; no logo
+$body-color: #222;
+$body-bg: #fff;
+$link-color: $primary;
+$font-family-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$line-height-base: 1.5;
+
+/*-- scss:rules --*/
+.title-page { text-align: center; padding-top: 4rem; }
+.title-page h1 { font-size: 2.4rem; margin-bottom: 2rem; }
+.declaration, .copyright-statement { margin: 2rem 0; padding: 1rem 1.25rem; border-left: 3px solid $primary; background: #faf6fd; }
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add inst/quarto/_extensions/_shared/
+git commit -m "feat(quarto): policy-mandated partials in _shared/"
+```
+
+### Task 6.2: `uomthesis-standard` extension
+
+**Files:**
+- Create: `inst/quarto/_extensions/uomthesis-standard/_extension.yml`
+- Create: `inst/quarto/_extensions/uomthesis-standard/template.tex`
+- Create: `inst/quarto/_extensions/uomthesis-standard/partials/header.tex`
+- Create: `inst/quarto/_extensions/uomthesis-standard/partials/before-body.tex`
+- Symlink: `inst/quarto/_extensions/uomthesis-standard/partials/title-page.tex` → `../../_shared/title-page.tex`
+- Symlink: `inst/quarto/_extensions/uomthesis-standard/partials/declaration.tex` → `../../_shared/declaration.tex`
+- Symlink: `inst/quarto/_extensions/uomthesis-standard/partials/copyright.tex` → `../../_shared/copyright.tex`
+- Symlink: `inst/quarto/_extensions/uomthesis-standard/partials/ai-disclosure.tex` → `../../_shared/ai-disclosure.tex`
+- Symlink: `inst/quarto/_extensions/uomthesis-standard/theme/uomthesis.scss` → `../../_shared/theme.scss`
+
+- [ ] **Step 1: `_extension.yml`**
+
+(The body from the spec — copy from `docs/superpowers/specs/2026-05-31-uomthesis-design.md`, "Section 3" / "`uomthesis-standard/_extension.yml`".)
+
+- [ ] **Step 2: `template.tex`** — see the skeleton in the spec; full body needs to handle:
+
+  - `\documentclass[12pt,a4paper]{report}`
+  - `ifluatex` branching for `fontspec` vs `mathptmx`
+  - `geometry` from `$for(geometry)$$geometry$$sep$,$endfor$`
+  - `setspace` and `\setstretch`
+  - `fancyhdr` with empty headers, foot-center page number
+  - `\pagenumbering{arabic}`
+  - `\blankpage` macro
+  - `$for(include-before)$$include-before$$endfor$` and `$body$`
+
+- [ ] **Step 3: `partials/header.tex`** (any TeX include-in-header content — e.g., `microtype`, `hyperref` setup)
+
+- [ ] **Step 4: Create the symlinks**
+
+On macOS / Linux:
+
+```bash
+cd "inst/quarto/_extensions/uomthesis-standard/partials"
+ln -s ../../_shared/title-page.tex .
+ln -s ../../_shared/declaration.tex .
+ln -s ../../_shared/copyright.tex .
+ln -s ../../_shared/ai-disclosure.tex .
+cd ../theme
+ln -s ../../_shared/theme.scss uomthesis.scss
+```
+
+On Windows (or any environment where `ln -s` is awkward), skip the block above and instead run the sync script from Task 6.4:
+
+```bash
+Rscript dev/sync_shared.R
+```
+
+This copies the `_shared/` files into each extension's `partials/` and `theme/` directories. The cost is that Windows contributors must re-run `sync_shared.R` after any `_shared/` change.
+
+- [ ] **Step 5: Render the extension against a hand-made tiny project to verify**
+
+Create a throwaway `/tmp/uomthesis-smoke/` with `_quarto.yml` and `index.qmd` referencing the local extension, then:
+
+```bash
+cd /tmp/uomthesis-smoke && quarto render
+```
+Expected: PDF emerges; opens; title page renders with policy statement, declaration prints exact text, copyright shows the four bullets.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add inst/quarto/_extensions/uomthesis-standard/
+git commit -m "feat(quarto): uomthesis-standard format extension"
+```
+
+### Task 6.3: `uomthesis-journal` extension (with Lua filter)
+
+**Files:**
+- Create: `inst/quarto/_extensions/uomthesis-journal/_extension.yml`
+- Create: `inst/quarto/_extensions/uomthesis-journal/template.tex`
+- Create: `inst/quarto/_extensions/uomthesis-journal/partials/rationale.tex`
+- Create: `inst/quarto/_extensions/uomthesis-journal/partials/contribution-statement.tex`
+- Create: `inst/quarto/_extensions/uomthesis-journal/filters/contribution.lua`
+- Symlinks for `title-page.tex`, `declaration.tex`, `copyright.tex`, `ai-disclosure.tex`, `theme/uomthesis.scss` (as for standard).
+
+- [ ] **Step 1: `_extension.yml`** — same as standard but registers `uomthesis-journal-pdf` / `-html`, lists `filters: [filters/contribution.lua]`, and adds the rationale partial to `include-before-body`.
+
+- [ ] **Step 2: `partials/rationale.tex`**
+
+```latex
+\chapter*{Rationale}
+\addcontentsline{toc}{chapter}{Rationale}
+
+$if(uomthesis.journal.rationale)$
+$uomthesis.journal.rationale$
+$else$
+\emph{This thesis is submitted in Journal Format. Include here a short
+explanation of the rationale for using this format and an account of
+how the thesis has been constructed.}
+$endif$
+```
+
+- [ ] **Step 3: `filters/contribution.lua`**
+
+A Pandoc Lua filter that walks each chapter (Header level 1), reads any `contribution` attribute attached, and emits a styled box just after the heading. For LaTeX: wrap with `\begin{tcolorbox}…\end{tcolorbox}`. For HTML: emit `<div class="contribution-statement">…</div>`.
+
+```lua
+-- contribution.lua
+-- Renders {.contribution="..."} attribute on H1 as a styled callout.
+
+function Header(el)
+  if el.level ~= 1 then return nil end
+  local stmt = el.attributes["contribution"]
+  if not stmt or stmt == "" then return nil end
+  if FORMAT:match 'latex' then
+    return {
+      el,
+      pandoc.RawBlock('latex',
+        '\\begin{tcolorbox}[title=Contribution statement]'
+        .. stmt .. '\\end{tcolorbox}')
+    }
+  elseif FORMAT:match 'html' then
+    return {
+      el,
+      pandoc.Div({ pandoc.Para(stmt) },
+                 { class = "contribution-statement" })
+    }
+  end
+  return nil
+end
+```
+
+- [ ] **Step 4: Symlinks + smoke render**
+
+Same as Task 6.2 step 4–5, but in `/tmp/uomthesis-smoke-journal/` with a chapter that has a `contribution` attribute.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add inst/quarto/_extensions/uomthesis-journal/
+git commit -m "feat(quarto): uomthesis-journal extension with contribution filter"
+```
+
+### Task 6.4: `dev/sync_shared.R`
+
+**Files:**
+- Create: `dev/sync_shared.R`
+
+- [ ] **Step 1: Write the script**
+
+```r
+# Verify and (if needed) recreate symlinks from each extension's partials
+# into _shared/. Use on Windows or in dev environments where symlinks
+# need to be re-created.
+
+shared <- "inst/quarto/_extensions/_shared"
+targets <- list(
+  c("uomthesis-standard/partials/title-page.tex",      "title-page.tex"),
+  c("uomthesis-standard/partials/declaration.tex",     "declaration.tex"),
+  c("uomthesis-standard/partials/copyright.tex",       "copyright.tex"),
+  c("uomthesis-standard/partials/ai-disclosure.tex",   "ai-disclosure.tex"),
+  c("uomthesis-standard/theme/uomthesis.scss",         "theme.scss"),
+  c("uomthesis-journal/partials/title-page.tex",       "title-page.tex"),
+  c("uomthesis-journal/partials/declaration.tex",      "declaration.tex"),
+  c("uomthesis-journal/partials/copyright.tex",        "copyright.tex"),
+  c("uomthesis-journal/partials/ai-disclosure.tex",    "ai-disclosure.tex"),
+  c("uomthesis-journal/theme/uomthesis.scss",          "theme.scss")
+)
+for (t in targets) {
+  link <- file.path("inst/quarto/_extensions", t[[1]])
+  src  <- file.path(shared, t[[2]])
+  if (file.exists(link) && Sys.readlink(link) != "") next
+  if (file.exists(link)) unlink(link)
+  file.copy(src, link)
+  message("Copied ", src, " -> ", link)
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add dev/sync_shared.R
+git commit -m "chore(dev): sync_shared.R for symlink maintenance"
+```
+
+---
+
+## Phase 7 — Project skeletons
+
+### Task 7.1: `inst/skeleton/` (standard format starter)
+
+**Files:**
+- Create: `inst/skeleton/_quarto.yml`
+- Create: `inst/skeleton/index.qmd`
+- Create: `inst/skeleton/chapters/00-abstract.qmd`
+- Create: `inst/skeleton/chapters/01-introduction.qmd`
+- Create: `inst/skeleton/chapters/02-literature.qmd`
+- Create: `inst/skeleton/chapters/03-methodology.qmd`
+- Create: `inst/skeleton/chapters/04-results.qmd`
+- Create: `inst/skeleton/chapters/05-discussion.qmd`
+- Create: `inst/skeleton/chapters/06-conclusion.qmd`
+- Create: `inst/skeleton/references.bib` (empty file)
+- Create: `inst/skeleton/figures/.keep` (empty)
+- Create: `inst/skeleton/README.md`
+
+- [ ] **Step 1: `_quarto.yml`** (from spec Section 5)
+
+- [ ] **Step 2: `index.qmd`** — front-matter shaped like the spec's "`index.qmd` front-matter" example, with all required fields present as Mustache-style placeholders (e.g., `{{title}}`, `{{forename}}`) that `create_thesis()` substitutes.
+
+- [ ] **Step 3: `chapters/00-abstract.qmd`** — one paragraph, ~50 words, with TODO note.
+
+- [ ] **Step 4: `chapters/01-introduction.qmd` …`06-conclusion.qmd`** — each has a single H1 matching its filename role and a `<!-- TODO -->` placeholder.
+
+- [ ] **Step 5: `README.md`** — "next steps" for the new user (how to render, where chapters live, how to run `check_thesis()`).
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add inst/skeleton/
+git commit -m "feat(skeleton): standard-format starter project"
+```
+
+### Task 7.2: `inst/skeleton-journal/` (journal format starter)
+
+**Files:** parallel to 7.1 but with `chapters/00-abstract.qmd`, `chapters/01-rationale.qmd`, `chapters/02-introduction.qmd`, `chapters/03-paper-one.qmd` (with a `contribution` chunk option example), `chapters/04-paper-two.qmd`, `chapters/05-discussion.qmd`. `_quarto.yml` references `uomthesis-journal-pdf`/`-html`.
+
+Same structure of steps as 7.1.
+
+```bash
+git add inst/skeleton-journal/
+git commit -m "feat(skeleton): journal-format starter project"
+```
+
+---
+
+## Phase 8 — `create_thesis()`
+
+### Task 8.1: `create_thesis()` implementation
+
+**Files:**
+- Create: `R/create_thesis.R`
+- Test: `tests/testthat/test-create_thesis.R`
+
+- [ ] **Step 1: Test the happy path**
+
+```r
+test_that("create_thesis scaffolds a standard project with required files", {
+  tmp <- withr::local_tempdir()
+  out <- create_thesis(
+    path = file.path(tmp, "my-thesis"),
+    format = "standard",
+    degree = "PhD",
+    author = list(forename = "Jane", middle_initial = "Q", surname = "Doe"),
+    title = "A test thesis",
+    year = 2027,
+    division = "MSM",
+    open = FALSE
+  )
+  expect_true(file.exists(file.path(out, "_quarto.yml")))
+  expect_true(file.exists(file.path(out, "index.qmd")))
+  expect_true(dir.exists(file.path(out, "_extensions", "uomthesis-standard")))
+  expect_true(dir.exists(file.path(out, "_extensions", "uomthesis-standard", "csl")))
+})
+```
+
+- [ ] **Step 2: Test font validation**
+
+```r
+test_that("create_thesis rejects an out-of-set font", {
+  tmp <- withr::local_tempdir()
+  expect_error(
+    create_thesis(file.path(tmp, "bad"), mainfont = "Comic Sans", open = FALSE),
+    class = "uomthesis_invalid_font"
+  )
+})
+```
+
+- [ ] **Step 3: Test pdflatex × font incompatibility**
+
+```r
+test_that("create_thesis rejects pdflatex with non-safe font", {
+  tmp <- withr::local_tempdir()
+  expect_error(
+    create_thesis(file.path(tmp, "bad"), engine = "pdflatex", mainfont = "Calibri", open = FALSE),
+    class = "uomthesis_engine_font_mismatch"
+  )
+})
+```
+
+- [ ] **Step 4: Implement**
+
+```r
+#' Scaffold a new uomthesis project
+#'
+#' @param path Path to the new project directory.
+#' @param format "standard" or "journal".
+#' @param degree One of the degrees in `policy_info()`-derived allowed set.
+#' @param faculty Faculty name.
+#' @param school School name.
+#' @param division AMBS division code: A&F | IMP | MSM | PMO, or NULL.
+#' @param author Named list: forename, middle_initial, surname, native_name.
+#' @param title Thesis title.
+#' @param year Year of submission (integer).
+#' @param reference_style One of `list_csl()$name`.
+#' @param engine "lualatex" | "xelatex" | "pdflatex".
+#' @param mainfont One of the policy-allowed fonts.
+#' @param force If TRUE, allow `path` to exist as long as it is empty.
+#' @param open If TRUE and RStudio is available, open the new project.
+#' @return Invisible path to the created project.
+#' @export
+create_thesis <- function(path,
+                          format = c("standard", "journal"),
+                          degree = "PhD",
+                          faculty = "Humanities",
+                          school = "Alliance Manchester Business School",
+                          division = NULL,
+                          author = NULL,
+                          title = NULL,
+                          year = NULL,
+                          reference_style = c("harvard-manchester", "apa",
+                                              "chicago-author-date", "mhra",
+                                              "vancouver"),
+                          engine = c("lualatex", "xelatex", "pdflatex"),
+                          mainfont = "Times New Roman",
+                          force = FALSE,
+                          open = rlang::is_interactive()) {
+  format          <- match.arg(format)
+  engine          <- match.arg(engine)
+  reference_style <- match.arg(reference_style)
+  p <- policy_constants()
+
+  if (!mainfont %in% p$allowed_fonts) {
+    cli::cli_abort(c(
+      "{.val {mainfont}} is not in the allowed font list.",
+      i = "Allowed: {paste(p$allowed_fonts, collapse = ', ')}."
+    ), class = "uomthesis_invalid_font")
+  }
+  if (engine == "pdflatex" && !mainfont %in% p$pdflatex_safe_fonts) {
+    cli::cli_abort(c(
+      "{.val {mainfont}} is not safe under pdflatex.",
+      i = "Use lualatex or xelatex, or pick from: {paste(p$pdflatex_safe_fonts, collapse = ', ')}."
+    ), class = "uomthesis_engine_font_mismatch")
+  }
+  if (!degree %in% p$allowed_degrees) {
+    cli::cli_abort("Degree {.val {degree}} not in allowed set.",
+                   class = "uomthesis_invalid_degree")
+  }
+
+  path <- normalizePath(path, mustWork = FALSE)
+  if (file.exists(path)) {
+    if (!force) {
+      cli::cli_abort("{.path {path}} already exists. Pass {.code force = TRUE} to overwrite an empty dir.")
+    }
+    if (length(list.files(path)) > 0) {
+      cli::cli_abort("{.path {path}} is not empty.")
+    }
+  } else {
+    fs::dir_create(path)
+  }
+
+  skel <- system.file(
+    if (format == "standard") "skeleton" else "skeleton-journal",
+    package = "uomthesis"
+  )
+  fs::dir_copy(skel, path, overwrite = TRUE)
+
+  ext_src <- system.file(
+    "quarto/_extensions",
+    paste0("uomthesis-", format),
+    package = "uomthesis"
+  )
+  fs::dir_create(file.path(path, "_extensions"))
+  fs::dir_copy(ext_src, file.path(path, "_extensions", paste0("uomthesis-", format)),
+               overwrite = TRUE)
+
+  shared_src <- system.file("quarto/_extensions/_shared", package = "uomthesis")
+  fs::dir_copy(shared_src, file.path(path, "_extensions", "_shared"), overwrite = TRUE)
+
+  csl_dir <- file.path(path, "_extensions", paste0("uomthesis-", format), "csl")
+  copy_csl(reference_style, to = csl_dir)
+
+  substitute_skeleton(
+    path,
+    title = title,
+    author = author,
+    degree = degree,
+    faculty = faculty,
+    school = school,
+    division = division,
+    year = year %||% as.integer(format(Sys.Date(), "%Y")),
+    reference_style = reference_style,
+    engine = engine,
+    mainfont = mainfont,
+    format = format
+  )
+
+  if (open && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
+    rstudioapi::openProject(path)
+  } else {
+    cli::cli_alert_success("Created uomthesis project at {.path {path}}.")
+    cli::cli_alert_info("Next: open {.file index.qmd}, then {.code quarto::quarto_render()}.")
+  }
+  invisible(path)
+}
+
+# Internal: substitute placeholders in the scaffolded index.qmd
+substitute_skeleton <- function(path, title, author, degree, faculty, school,
+                                division, year, reference_style, engine,
+                                mainfont, format) {
+  idx <- file.path(path, "index.qmd")
+  body <- readLines(idx, warn = FALSE, encoding = "UTF-8")
+  body <- gsub("{{title}}",            title %||% "Your thesis title", body, fixed = TRUE)
+  body <- gsub("{{forename}}",         author$forename %||% "Forename", body, fixed = TRUE)
+  body <- gsub("{{middle_initial}}",   author$middle_initial %||% "M",  body, fixed = TRUE)
+  body <- gsub("{{surname}}",          author$surname %||% "Surname",   body, fixed = TRUE)
+  body <- gsub("{{native_name}}",      author$native_name %||% "",       body, fixed = TRUE)
+  body <- gsub("{{degree}}",           degree,                          body, fixed = TRUE)
+  body <- gsub("{{faculty}}",          faculty,                         body, fixed = TRUE)
+  body <- gsub("{{school}}",           school,                          body, fixed = TRUE)
+  body <- gsub("{{division}}",         division %||% "",                 body, fixed = TRUE)
+  body <- gsub("{{year}}",             as.character(year),              body, fixed = TRUE)
+  body <- gsub("{{thesis_format}}",    format,                          body, fixed = TRUE)
+  body <- gsub("{{reference_style}}",  reference_style,                 body, fixed = TRUE)
+  body <- gsub("{{engine}}",           engine,                          body, fixed = TRUE)
+  body <- gsub("{{mainfont}}",         mainfont,                        body, fixed = TRUE)
+  writeLines(body, idx)
+}
+```
+
+- [ ] **Step 5: Pass; commit**
+
+```bash
+Rscript -e "devtools::document(); devtools::test(filter = 'create_thesis')"
+git add R/create_thesis.R tests/testthat/test-create_thesis.R NAMESPACE man/
+git commit -m "feat: create_thesis() scaffolds a new project"
+```
+
+---
+
+## Phase 9 — Compliance fixtures and integration tests
+
+### Task 9.1 — `compliant-standard/` fixture
+
+**Files:** `tests/testthat/fixtures/compliant-standard/…` — a minimal but fully valid project.
+
+- [ ] **Step 1: Generate by running `create_thesis()` against a temp dir, then copy the result into fixtures.**
+
+```bash
+Rscript -e '
+  uomthesis::create_thesis(
+    "tests/testthat/fixtures/compliant-standard",
+    author = list(forename = "Jane", middle_initial = "Q", surname = "Doe"),
+    title = "Compliance test", year = 2027, division = "MSM", open = FALSE,
+    force = TRUE
+  )
+'
+```
+
+- [ ] **Step 2: Test that `check_thesis()` returns ok**
+
+```r
+test_that("compliant-standard fixture passes all source-phase rules", {
+  res <- check_thesis(fixture_path("compliant-standard"), format = "console")
+  expect_true(res$ok)
+  expect_equal(length(res$findings), 0)
+})
+```
+
+- [ ] **Step 3: Pass; commit**
+
+```bash
+git add tests/testthat/fixtures/compliant-standard/ tests/testthat/test-check_thesis.R
+git commit -m "test: compliant-standard fixture covers source-phase happy path"
+```
+
+### Task 9.2 — `compliant-journal/` fixture
+
+Same shape as 9.1 with `format = "journal"`.
+
+### Tasks 9.3 — 9.5: Noncompliant fixtures
+
+For each, copy `compliant-standard/` to a new fixture directory, mutate exactly one thing, write a test that asserts the expected rule fires.
+
+- **Task 9.3 — `noncompliant-missing-cr/`**: delete the copyright partial; expect `copyright-text` to fire.
+- **Task 9.4 — `noncompliant-altered-decl/`**: edit `declaration.tex` text; expect `declaration-text` to fire.
+- **Task 9.5 — `noncompliant-roman/`**: set `linestretch: 1.0` in `index.qmd`; expect `linespacing-allowed` to fire.
+
+Each task: copy + mutate + write test + commit.
+
+---
+
+## Phase 10 — Documentation
+
+### Task 10.1: `README.Rmd` → `README.md`
+
+**Files:**
+- Create: `README.Rmd`
+- Generated: `README.md`
+
+- [ ] **Step 1: Write `README.Rmd`**
+
+Sections: badge row (R-CMD-check, lifecycle, license), 1-sentence pitch, "What this package gives you" (3 bullets), Install (`remotes::install_github("gabriel-cabrera-guz/uomthesis")`), Quick start (`create_thesis(); quarto::quarto_render(); check_thesis()`), Compliance scope (link to spec), Out of scope, Contributing.
+
+- [ ] **Step 2: Knit; commit**
+
+```bash
+Rscript -e "rmarkdown::render('README.Rmd', output_format = 'md_document')"
+git add README.Rmd README.md
+git commit -m "docs: README"
+```
+
+### Task 10.2: `NEWS.md`
+
+**Files:** Create `NEWS.md` with a single 0.0.0.9000 entry describing development scope and the targeted policy version.
+
+```bash
+git add NEWS.md
+git commit -m "docs: NEWS.md"
+```
+
+### Task 10.3: Vignettes
+
+**Files:**
+- Create: `vignettes/getting-started.Rmd`
+- Create: `vignettes/journal-format.Rmd`
+- Create: `vignettes/compliance.Rmd`
+- Create: `vignettes/citation-styles.Rmd`
+
+For each, follow the audience description in the spec's "Documentation" table. Each vignette ends in a working artifact.
+
+Commit each vignette separately:
+
+```bash
+git add vignettes/getting-started.Rmd
+git commit -m "docs: getting-started vignette"
+# repeat for the other three
+```
+
+### Task 10.4: pkgdown configuration
+
+**Files:**
+- Create: `pkgdown/_pkgdown.yml`
+
+```yaml
+url: https://gabriel-cabrera-guz.github.io/uomthesis
+template:
+  bootstrap: 5
+home:
+  links:
+    - text: Spec
+      href: https://github.com/gabriel-cabrera-guz/uomthesis/blob/main/docs/superpowers/specs/2026-05-31-uomthesis-design.md
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [github]
+articles:
+  - title: Articles
+    navbar: ~
+    contents:
+      - getting-started
+      - journal-format
+      - compliance
+      - citation-styles
+reference:
+  - title: Scaffolding & rendering
+    contents:
+      - create_thesis
+  - title: Word count
+    contents:
+      - word_count
+  - title: Compliance
+    contents:
+      - check_thesis
+      - validate_metadata
+  - title: Helpers
+    contents:
+      - list_csl
+      - copy_csl
+      - policy_info
+```
+
+Build locally:
+
+```bash
+Rscript -e "pkgdown::build_site()"
+```
+
+Commit:
+
+```bash
+git add pkgdown/_pkgdown.yml
+git commit -m "docs: pkgdown configuration"
+```
+
+---
+
+## Phase 11 — CI
+
+### Task 11.1: `R-CMD-check.yml`
+
+**Files:** `.github/workflows/R-CMD-check.yml`
+
+Use `usethis::use_github_action("check-standard")` to generate the canonical workflow:
+
+```bash
+Rscript -e 'usethis::use_github_action("check-standard")'
+```
+
+Commit:
+
+```bash
+git add .github/workflows/R-CMD-check.yml
+git commit -m "ci: R-CMD-check on Linux/macOS/Windows × release/devel"
+```
+
+### Task 11.2: `test-coverage.yml`
+
+```bash
+Rscript -e 'usethis::use_github_action("test-coverage")'
+git add .github/workflows/test-coverage.yml
+git commit -m "ci: test-coverage workflow"
+```
+
+### Task 11.3: `pkgdown.yml`
+
+```bash
+Rscript -e 'usethis::use_github_action("pkgdown")'
+git add .github/workflows/pkgdown.yml
+git commit -m "ci: pkgdown deploy"
+```
+
+### Task 11.4: `render-example-thesis.yml`
+
+**Files:** `.github/workflows/render-example-thesis.yml`
+
+```yaml
+name: render-example-thesis
+on: [push, pull_request]
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: quarto-dev/quarto-actions/setup@v2
+      - name: Install TinyTeX
+        run: quarto install tinytex --no-prompt
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools, any::pdftools, any::quarto
+          needs: check
+      - name: Build package
+        run: R CMD INSTALL .
+      - name: Render compliant-standard fixture
+        run: |
+          cd tests/testthat/fixtures/compliant-standard
+          quarto render
+      - name: Check rendered PDF
+        run: |
+          Rscript -e 'uomthesis::check_thesis(
+            project = "tests/testthat/fixtures/compliant-standard",
+            rendered_pdf = "tests/testthat/fixtures/compliant-standard/_book/Book.pdf",
+            fail_on = "error"
+          )'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: example-thesis
+          path: tests/testthat/fixtures/compliant-standard/_book/*.pdf
+```
+
+Commit:
+
+```bash
+git add .github/workflows/render-example-thesis.yml
+git commit -m "ci: end-to-end render of compliant-standard fixture"
+```
+
+---
+
+## Final verification
+
+- [ ] **Step 1: Full local check**
+
+```bash
+Rscript -e "devtools::check()"
+```
+Expected: 0 errors, 0 warnings, 0 notes (or only notes about non-CRAN release).
+
+- [ ] **Step 2: pkgdown site builds locally**
+
+```bash
+Rscript -e "pkgdown::build_site()"
+```
+
+- [ ] **Step 3: Tag v0.1.0 once CI is green**
+
+```bash
+git tag -a v0.1.0 -m "uomthesis 0.1.0"
+git push --tags
+```
+
+---
+
+## Reference: spec sections that drive each phase
+
+- Phase 0 → Spec "Package layout" leaves
+- Phase 1 → Spec "policy.R as the single source of truth" + every "policy §x.y" reference throughout
+- Phase 2–4 → Spec "R API surface"
+- Phase 5 → Spec "The validator"
+- Phase 6 → Spec "The Quarto extensions"
+- Phase 7 → Spec "inst/skeleton/" + "inst/skeleton-journal/"
+- Phase 8 → Spec "create_thesis()"
+- Phase 9 → Spec "Testing strategy" — fixtures
+- Phase 10 → Spec "Documentation"
+- Phase 11 → Spec "CI"
