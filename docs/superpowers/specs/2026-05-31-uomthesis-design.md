@@ -111,7 +111,7 @@ uomthesis/
 │   ├── parse_qmd.R            # internal: walk .qmd source for AST-like checks
 │   ├── parse_pdf.R            # internal: pdftools wrapper for PDF-phase checks
 │   ├── policy.R               # single source of truth for policy constants
-│   ├── csl.R                  # list_styles(), copy_csl()
+│   ├── csl.R                  # list_csl(), copy_csl()
 │   ├── utils.R                # internal helpers
 │   └── zzz.R                  # .onLoad sanity check on inst/quarto/_extensions/
 │
@@ -300,7 +300,7 @@ How the template enforces specific clauses:
 Same backbone as standard, with:
 
 - **Rationale section** (mandatory per policy §13.10, first bullet) included as a partial after the abstract, before chapter one.
-- **Per-chapter contribution declaration**: a `contribution` chunk option (e.g. `#| contribution: "I designed the study, collected data, wrote the manuscript. Co-author X advised on statistical methods."`) emits a styled box at the chapter opening.
+- **Per-chapter contribution declaration**: a `contribution` chunk option (e.g. `#| contribution: "I designed the study, collected data, wrote the manuscript. Co-author X advised on statistical methods."`) emits a styled box at the chapter opening. Implemented as a Lua filter shipped under `uomthesis-journal/_extensions/uomthesis-journal/filters/contribution.lua`, registered in the format's `filters:` list. The filter renders the box for PDF (a tcolorbox-styled callout) and HTML (a CSS-styled div).
 - **Word limit documented as 90 k** in `_extension.yml`. The partial templates do not enforce it; the validator does.
 - **`thesis_format: journal`** metadata key set automatically — used by `word_count()` to apply the 90 k cap and by `check_thesis()` to load journal-specific rules.
 
@@ -334,6 +334,7 @@ create_thesis(
                       "mhra", "vancouver"),
   engine = c("lualatex", "xelatex", "pdflatex"),
   mainfont = "Times New Roman",       # validated against policy §7.1 allowed list
+  force = FALSE,                      # if TRUE, allow path to exist when empty
   open = rlang::is_interactive()
 )
 ```
@@ -405,7 +406,11 @@ Default `fail_on = "none"` — informational unless the user opts in.
 ```r
 list_csl()                  # data.frame of bundled CSLs: name, source URL, retrieval date
 copy_csl(name, to = ".")    # copy a bundled CSL into a project
-policy_info()               # version, retrieved date, next review date of the targeted policy
+policy_info()               # named list with components $version (character, e.g. "12"),
+                            # $dated (Date, e.g. 2026-03-01), $next_review (Date),
+                            # $source_url (character). Custom print method that
+                            # formats as a one-screen summary; programmatic access
+                            # via list components.
 validate_metadata(project = ".")   # lint index.qmd without running a full check
 ```
 
@@ -516,6 +521,8 @@ Locked (not exposed as knobs):
 - Word-count text on TOC (auto-rendered)
 
 This "knobs only where the policy permits variation" principle is what makes the validator meaningful.
+
+`optional_prelims.preface`, `optional_prelims.acknowledgements`, `optional_prelims.lay_abstract`, and `optional_prelims.dedication` exist solely to gate template inclusion of those sections — there are no validator rules tied to them. The validator is silent on whether a thesis has acknowledgements; the policy treats them as optional.
 
 ## The validator
 
@@ -668,9 +675,9 @@ Semver: `MAJOR.MINOR.PATCH`.
 
 ## v0.1 vs later
 
-**v0.1** (initial public release): scaffolder, both formats, source-phase validator, word counter, five bundled CSLs, four vignettes, end-to-end CI on Linux, GitHub-only distribution.
+**v0.1** (initial public release): scaffolder, both formats, source-phase validator, word counter, five bundled CSLs, four vignettes, end-to-end CI on Linux, GitHub-only distribution. `check_thesis()` ships with console / markdown / JSON output formats from day one.
 
-**v0.2** candidates: PDF-phase validator, structural validator output formats beyond markdown (JSON for CI already in v0.1 spec), `policy_diff()` to compare current text constants against a fetched policy PDF, optional `.docx` output, formal CRAN submission.
+**v0.2** candidates: PDF-phase validator, `policy_diff()` to compare current text constants against a fetched policy PDF, optional `.docx` output, formal CRAN submission.
 
 ## Sources
 
