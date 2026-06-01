@@ -1,0 +1,41 @@
+Package: uomthesis
+Type: Package
+Title: University of Manchester AMBS PhD Thesis Template and Compliance Tools
+Version: 0.0.0.9000
+Authors@R: c(
+    person(
+      "Gabriel", "Cabrera",
+      email = "gabriel.cabrera.guz@gmail.com",
+      role = c("aut", "cre")
+    )
+  )
+Description: Provides a Quarto template (standard and journal formats), a
+    project scaffolder, a word counter, and a compliance validator for
+    PhD theses submitted to Alliance Manchester Business School (AMBS)
+    in the Faculty of Humanities at the University of Manchester. Encodes
+    the requirements of the University's Presentation of Theses Policy.
+License: MIT + file LICENSE
+URL: https://github.com/gabriel-cabrera-guz/uomthesis
+BugReports: https://github.com/gabriel-cabrera-guz/uomthesis/issues
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.1.0)
+Imports:
+    cli,
+    fs,
+    glue,
+    rlang,
+    withr,
+    yaml
+Suggests:
+    knitr,
+    pdftools,
+    quarto,
+    rmarkdown,
+    rstudioapi,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+VignetteBuilder: knitr
