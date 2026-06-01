@@ -11,3 +11,4 @@ _book/
 _freeze/
 /.quarto/
 /inst/doc
+*.Rproj
