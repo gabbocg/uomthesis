@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^\.claude$
+^docs$
+^uomthesis$
+^LICENSE\.md$
