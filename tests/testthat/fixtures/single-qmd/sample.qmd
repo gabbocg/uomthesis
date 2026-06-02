@@ -1,0 +1,11 @@
+---
+title: "Sample"
+author: "Jane Doe"
+uomthesis:
+  degree: PhD
+  year: 2027
+---
+
+# Heading
+
+Body text.
