@@ -11,3 +11,15 @@ parse_qmd_yaml <- function(path) {
   if (is.na(end)) return(list())
   yaml::yaml.load(paste(lines[2:(end - 1L)], collapse = "\n"))
 }
+
+#' Classify a .qmd/.bib file by role
+#' @param path File path or filename.
+#' @return One of "prelim", "body", "appendix", "bibliography".
+#' @keywords internal
+classify_qmd_file <- function(path) {
+  base <- basename(path)
+  if (grepl("\\.bib$", base, ignore.case = TRUE)) return("bibliography")
+  if (grepl("^appendix", base, ignore.case = TRUE)) return("appendix")
+  if (grepl("^00-", base)) return("prelim")
+  "body"
+}
