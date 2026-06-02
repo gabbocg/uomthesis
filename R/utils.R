@@ -3,14 +3,15 @@
 #' @return Absolute path to the project root.
 #' @keywords internal
 locate_project <- function(start = ".") {
-  cur <- normalizePath(start, mustWork = TRUE)
+  start_abs <- normalizePath(start, mustWork = TRUE)
+  cur <- start_abs
   repeat {
     if (file.exists(file.path(cur, "_quarto.yml"))) return(cur)
     parent <- dirname(cur)
     if (parent == cur) {
       cli::cli_abort(
         c("No Quarto project found.",
-          i = "Searched up from {.path {start}} but did not find a {.file _quarto.yml}."),
+          i = "Searched up from {.path {start_abs}} but did not find a {.file _quarto.yml}."),
         class = "uomthesis_no_project"
       )
     }
