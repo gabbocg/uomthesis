@@ -1,0 +1,13 @@
+---
+title: "Mini"
+uomthesis:
+  candidate:
+    forename: Jane
+    middle_initial: Q
+    surname: Doe
+  degree: PhD
+  faculty: Humanities
+  school: Alliance Manchester Business School
+  year: 2027
+  thesis_format: standard
+---

@@ -18,3 +18,9 @@ test_that("classify_qmd_file uses filename convention", {
   expect_equal(classify_qmd_file("chapters/appendix-a.qmd"),  "appendix")
   expect_equal(classify_qmd_file("references.bib"),           "bibliography")
 })
+
+test_that("read_uomthesis_metadata reads the uomthesis block from index.qmd", {
+  meta <- read_uomthesis_metadata(fixture_path("mini-project"))
+  expect_equal(meta$degree, "PhD")
+  expect_equal(meta$candidate$surname, "Doe")
+})
