@@ -29,7 +29,7 @@ validate_metadata <- function(project = ".") {
         severity   = "error",
         message    = cli::format_inline("Required field {.field {key}} is missing or empty."),
         location   = list(file = "index.qmd"),
-        policy_ref = "§8.1.b",
+        policy_ref = "\u00a78.1.b",
         hint       = "Add the field under the uomthesis: block in index.qmd."
       )))
     }
@@ -41,7 +41,7 @@ validate_metadata <- function(project = ".") {
       severity   = "error",
       message    = cli::format_inline("Degree {.val {meta$degree}} is not in the allowed set."),
       location   = list(file = "index.qmd"),
-      policy_ref = "§8.1.b",
+      policy_ref = "\u00a78.1.b",
       hint       = paste0("Use one of: ", paste(p$allowed_degrees, collapse = ", "), ".")
     )))
   }
@@ -51,7 +51,7 @@ validate_metadata <- function(project = ".") {
       severity   = "error",
       message    = cli::format_inline("Faculty {.val {meta$faculty}} is not in the allowed set."),
       location   = list(file = "index.qmd"),
-      policy_ref = "§8.1.b",
+      policy_ref = "\u00a78.1.b",
       hint       = paste0("Use one of: ", paste(p$allowed_faculties, collapse = ", "), ".")
     )))
   }
@@ -62,7 +62,7 @@ validate_metadata <- function(project = ".") {
         severity   = "error",
         message    = "year must be an integer between 2000 and 2100.",
         location   = list(file = "index.qmd"),
-        policy_ref = "§8.1.b",
+        policy_ref = "\u00a78.1.b",
         hint       = "year: 2027 (no month)."
       )))
     }
