@@ -10,7 +10,7 @@
     Code
       policy_constants()$declaration_either
     Output
-      [1] "that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning"
+      [1] "that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning;"
 
 # declaration OR variant matches policy §8.1.f verbatim
 

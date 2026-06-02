@@ -56,8 +56,10 @@ policy_constants <- function() {
     # §8.1.b — title page statement template
     title_page_statement = "A thesis submitted to The University of Manchester for the degree of {degree} in the Faculty of {faculty}.",
 
-    # §8.1.f — declaration EITHER variant (no leading "I declare"; no trailing punctuation)
-    declaration_either = "that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning",
+    # §8.1.f EITHER variant — verbatim from policy (semicolon terminates the
+    # enumeration item). The partial template will translate the trailing
+    # semicolon to a period when rendering a standalone declaration.
+    declaration_either = "that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning;",
 
     # §8.1.f — declaration OR variant (no leading "I declare"; two sentences)
     declaration_or = "what portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning. This should include reference to joint authorship of published materials which might have been included in a thesis submitted by another student to this university or any other university or other institute of learning.",
@@ -73,18 +75,20 @@ policy_constants <- function() {
     # §9.1.d — AI disclosure sample text
     ai_disclosure_sample = "Generative AI Disclosure: I used [AI tool name] to assist in idea generation, image creation, and for feedback on grammar and content. I implemented some of its recommendations. I used [AI tool name] to explore ideas for visuals (one of which is used and cited on page 2)",
 
-    # allowed enumeration sets
+    # §8.1.b — degree titles per University Regulation XI
     allowed_degrees = c(
       "PhD", "MPhil", "DBA", "MD", "EngD",
       "PhD by Enterprise", "Professional Doctorate"
     ),
 
+    # §8.1.b — Faculty titles per University Regulation X
     allowed_faculties = c(
       "Humanities",
       "Biology, Medicine and Health",
       "Science and Engineering"
     ),
 
+    # §8.1.b — School titles per University Regulation X (Humanities schools)
     allowed_schools = c(
       "Alliance Manchester Business School",
       "School of Arts, Languages and Cultures",
@@ -92,6 +96,7 @@ policy_constants <- function() {
       "School of Environment, Education and Development"
     ),
 
+    # AMBS Doctoral Programmes PGR Handbook — divisional structure (A&F / IMP / MSM / PMO)
     ambs_divisions = c("A&F", "IMP", "MSM", "PMO")
   )
 }
