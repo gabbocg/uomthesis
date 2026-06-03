@@ -62,10 +62,14 @@ strip_code_chunks <- function(lines) {
 strip_display_math <- function(lines) {
   in_math <- FALSE
   keep <- logical(length(lines))
+  single_line <- "^\\s*\\$\\$.*\\$\\$\\s*$"
+  delimiter   <- "^\\s*\\$\\$"
   for (i in seq_along(lines)) {
-    if (grepl("^\\$\\$", lines[[i]])) {
-      # single-line $$...$$ block: skip without toggling state
-      if (grepl("^\\$\\$.*\\$\\$$", lines[[i]])) next
+    if (grepl(single_line, lines[[i]])) {
+      # single-line display math: skip without toggling
+      next
+    }
+    if (grepl(delimiter, lines[[i]])) {
       in_math <- !in_math
       next
     }

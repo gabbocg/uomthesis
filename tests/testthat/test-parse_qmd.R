@@ -58,3 +58,14 @@ test_that("word_count_text counts words after stripping YAML/code/equations", {
   )
   expect_equal(word_count_text(text), 7 + 3)  # "This is ... words" + "Another short line"
 })
+
+test_that("word_count_text tolerates leading whitespace before display math", {
+  text <- c(
+    "Before math.",
+    "  $$",
+    "  x = y",
+    "  $$",
+    "After math."
+  )
+  expect_equal(word_count_text(text), 4)  # "Before math." (2) + "After math." (2)
+})

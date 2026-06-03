@@ -5,16 +5,30 @@
 #' pages, bibliography, and appendices).
 #'
 #' @param project Path to project root (containing _quarto.yml).
-#' @param rendered_pdf Optional path to a rendered PDF; if supplied, counting
-#'   is done from the PDF (matches what an examiner sees).
+#' @param rendered_pdf Optional path to a rendered PDF. **Not yet implemented**
+#'   in v0.1 — supplying a value emits a warning and falls back to source-based
+#'   counting. Will be honored in v0.2.
 #' @param warn_at Fraction of cap at which a warning is printed (default 0.9).
 #' @param error_at Optional fraction of cap at which an error is raised.
+#'   Must be greater than `warn_at` if supplied.
 #' @return An object of class `uomthesis_word_count`.
+#' @importFrom rlang `%||%`
 #' @export
 word_count <- function(project = ".",
                        rendered_pdf = NULL,
                        warn_at = 0.9,
                        error_at = NULL) {
+  if (!is.null(rendered_pdf)) {
+    cli::cli_warn(c(
+      "PDF-based word counting is not yet implemented (planned for v0.2).",
+      i = "Falling back to source-based counting; {.arg rendered_pdf} will be ignored."
+    ))
+  }
+  if (!is.null(error_at) && !is.null(warn_at) && error_at <= warn_at) {
+    cli::cli_abort(
+      "{.arg error_at} ({.val {error_at}}) must be greater than {.arg warn_at} ({.val {warn_at}})."
+    )
+  }
   root <- locate_project(project)
   meta <- read_uomthesis_metadata(root)
   qy   <- yaml::read_yaml(file.path(root, "_quarto.yml"))
@@ -76,4 +90,3 @@ print.uomthesis_word_count <- function(x, ...) {
   invisible(x)
 }
 
-`%||%` <- function(a, b) if (is.null(a)) b else a
