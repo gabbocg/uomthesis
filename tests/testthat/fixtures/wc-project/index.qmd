@@ -1,0 +1,13 @@
+---
+title: WC test
+uomthesis:
+  candidate:
+    forename: J
+    middle_initial: Q
+    surname: D
+  degree: PhD
+  faculty: Humanities
+  school: Alliance Manchester Business School
+  year: 2027
+  thesis_format: standard
+---

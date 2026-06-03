@@ -1,0 +1,9 @@
+project:
+  type: book
+book:
+  chapters:
+    - index.qmd
+    - chapters/00-abstract.qmd
+    - chapters/01-intro.qmd
+format:
+  uomthesis-standard-pdf: default
