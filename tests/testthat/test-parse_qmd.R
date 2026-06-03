@@ -42,3 +42,19 @@ test_that("read_uomthesis_metadata errors when uomthesis: block is missing", {
   writeLines(c("---", "title: No block", "---"), file.path(tmp, "index.qmd"))
   expect_error(read_uomthesis_metadata(tmp), class = "uomthesis_no_metadata")
 })
+
+test_that("word_count_text counts words after stripping YAML/code/equations", {
+  text <- c(
+    "---", "title: Sample", "---", "",
+    "# Heading",
+    "",
+    "This is a sentence with seven words.",
+    "",
+    "```{r}", "x <- 1 + 1", "```",
+    "",
+    "$$E = mc^2$$",
+    "",
+    "Another short line."
+  )
+  expect_equal(word_count_text(text), 7 + 3)  # "This is ... words" + "Another short line"
+})

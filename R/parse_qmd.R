@@ -24,6 +24,56 @@ classify_qmd_file <- function(path) {
   "body"
 }
 
+#' Count words in body text, stripping YAML, code chunks, and equations
+#' @param lines Character vector of lines.
+#' @return Integer count.
+#' @keywords internal
+word_count_text <- function(lines) {
+  lines <- strip_yaml(lines)
+  lines <- strip_code_chunks(lines)
+  lines <- strip_display_math(lines)
+  lines  <- sub("^#+\\s.*$", "", lines)     # strip whole heading lines
+  body   <- paste(lines, collapse = " ")
+  tokens <- strsplit(body, "\\s+")[[1]]
+  tokens <- tokens[nzchar(tokens) & grepl("[A-Za-z0-9]", tokens)]
+  length(tokens)
+}
+
+strip_yaml <- function(lines) {
+  if (length(lines) < 2L || !grepl("^---\\s*$", lines[[1L]])) return(lines)
+  end <- which(grepl("^---\\s*$", lines))[2L]
+  if (is.na(end)) return(lines)
+  lines[-(1:end)]
+}
+
+strip_code_chunks <- function(lines) {
+  in_chunk <- FALSE
+  keep <- logical(length(lines))
+  for (i in seq_along(lines)) {
+    if (grepl("^```", lines[[i]])) {
+      in_chunk <- !in_chunk
+      next
+    }
+    keep[[i]] <- !in_chunk
+  }
+  lines[keep]
+}
+
+strip_display_math <- function(lines) {
+  in_math <- FALSE
+  keep <- logical(length(lines))
+  for (i in seq_along(lines)) {
+    if (grepl("^\\$\\$", lines[[i]])) {
+      # single-line $$...$$ block: skip without toggling state
+      if (grepl("^\\$\\$.*\\$\\$$", lines[[i]])) next
+      in_math <- !in_math
+      next
+    }
+    keep[[i]] <- !in_math
+  }
+  lines[keep]
+}
+
 #' Read the uomthesis: metadata block from a project's index.qmd
 #' @param project_path Path to project root (contains _quarto.yml + index.qmd).
 #' @return A list of the uomthesis block; errors if missing.
