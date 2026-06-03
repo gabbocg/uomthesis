@@ -55,6 +55,26 @@ validate_metadata <- function(project = ".") {
       hint       = paste0("Use one of: ", paste(p$allowed_faculties, collapse = ", "), ".")
     )))
   }
+  if (!is.null(meta$school) && !meta$school %in% p$allowed_schools) {
+    findings <- c(findings, list(list(
+      rule_id    = "degree-faculty-school",
+      severity   = "error",
+      message    = cli::format_inline("School {.val {meta$school}} is not in the allowed set."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a78.1.b",
+      hint       = paste0("Use one of: ", paste(p$allowed_schools, collapse = ", "), ".")
+    )))
+  }
+  if (!is.null(meta$thesis_format) && !meta$thesis_format %in% c("standard", "journal")) {
+    findings <- c(findings, list(list(
+      rule_id    = "thesis-format",
+      severity   = "error",
+      message    = cli::format_inline("thesis_format {.val {meta$thesis_format}} must be 'standard' or 'journal'."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a74.6",
+      hint       = "Set thesis_format: standard or thesis_format: journal."
+    )))
+  }
   if (!is.null(meta$year)) {
     if (!is.numeric(meta$year) || meta$year < 2000 || meta$year > 2100) {
       findings <- c(findings, list(list(
@@ -71,4 +91,19 @@ validate_metadata <- function(project = ".") {
   out <- list(ok = length(findings) == 0, findings = findings)
   class(out) <- c("uomthesis_metadata_check", "list")
   out
+}
+
+#' @export
+print.uomthesis_metadata_check <- function(x, ...) {
+  if (x$ok) {
+    cli::cli_alert_success("Metadata is valid - no findings.")
+    return(invisible(x))
+  }
+  cli::cli_h1("Metadata findings ({length(x$findings)})")
+  for (f in x$findings) {
+    cli::cli_li("{.strong {f$rule_id}} ({f$severity}) {.emph {f$policy_ref}}")
+    cli::cli_text("{f$message}")
+    if (nzchar(f$hint)) cli::cli_alert_info("{f$hint}")
+  }
+  invisible(x)
 }
