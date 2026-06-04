@@ -311,6 +311,9 @@ test_that("english-language passes when lang is unset", {
 # ---------------------------------------------------------------------------
 
 # Helper: create a temporary mock project with optional partial files
+# chapters: character vector of chapter file names (relative to root); default is c("index.qmd")
+# quarto_yaml_extra: character vector of extra lines appended to _quarto.yml
+# qmd_files: named list of extra qmd content to write; names are paths relative to root
 make_mock_project <- function(thesis_format = "standard",
                               degree = "PhD",
                               faculty = "Humanities",
@@ -320,12 +323,19 @@ make_mock_project <- function(thesis_format = "standard",
                               surname = "Doe",
                               year = 2027,
                               declaration_variant = "either",
-                              partials = list()) {
+                              partials = list(),
+                              chapters = NULL,
+                              quarto_yaml_extra = character(0),
+                              qmd_files = list()) {
   root <- withr::local_tempdir(.local_envir = parent.frame())
+  chapter_list <- if (!is.null(chapters)) chapters else c("index.qmd")
+  chapter_lines <- vapply(chapter_list, function(f) paste0("    - ", f), character(1))
   fs::file_create(fs::path(root, "_quarto.yml"))
   writeLines(c(
     "project:", "  type: book",
-    "book:", "  chapters:", "    - index.qmd"
+    "book:", "  chapters:",
+    chapter_lines,
+    quarto_yaml_extra
   ), fs::path(root, "_quarto.yml"))
   writeLines(c(
     "---",
@@ -348,6 +358,12 @@ make_mock_project <- function(thesis_format = "standard",
   fs::dir_create(partial_dir)
   for (nm in names(partials)) {
     writeLines(partials[[nm]], fs::path(partial_dir, nm))
+  }
+  # Write any extra qmd files requested by the test
+  for (nm in names(qmd_files)) {
+    abs <- fs::path(root, nm)
+    fs::dir_create(fs::path_dir(abs))
+    writeLines(qmd_files[[nm]], abs)
   }
   root
 }
@@ -561,8 +577,198 @@ test_that("copyright-author-match returns NULL when candidate metadata is absent
   expect_null(rule$check(ctx))
 })
 
-# rule_registry now has 13 rules
+# rule_registry now has 17 rules (13 from Phase 5C + 4 from Phase 5D)
+test_that("rule_registry returns exactly 17 rules", {
+  expect_equal(length(rule_registry()), 17L)
+})
 
-test_that("rule_registry returns exactly 13 rules", {
-  expect_equal(length(rule_registry()), 13L)
+# ---------------------------------------------------------------------------
+# Phase 5D: structure and resource rules
+# ---------------------------------------------------------------------------
+
+# 5.D.1 — prelim-order
+
+test_that("prelim-order passes for correct 00- -> 01- -> appendix order", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "00-abstract.qmd", "00-acknowledgements.qmd",
+                 "01-intro.qmd", "appendix-A.qmd"),
+    qmd_files = list(
+      "00-abstract.qmd"         = c("---", "title: Abstract", "---", "Short abstract."),
+      "00-acknowledgements.qmd" = c("---", "title: Acknowledgements", "---", "Thanks."),
+      "01-intro.qmd"            = c("---", "title: Introduction", "---", "Body text."),
+      "appendix-A.qmd"          = c("---", "title: Appendix A", "---", "Appendix.")
+    )
+  )
+  rule <- get_rule("prelim-order")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("prelim-order fires when a body chapter appears before a prelim", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "01-intro.qmd", "00-abstract.qmd"),
+    qmd_files = list(
+      "01-intro.qmd"    = c("---", "title: Introduction", "---", "Body text."),
+      "00-abstract.qmd" = c("---", "title: Abstract", "---", "Short abstract.")
+    )
+  )
+  rule <- get_rule("prelim-order")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "prelim-order")
+  expect_equal(result$severity, "error")
+})
+
+test_that("prelim-order passes when only body chapters exist (no prelims)", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "01-intro.qmd", "02-methods.qmd"),
+    qmd_files = list(
+      "01-intro.qmd"   = c("---", "title: Introduction", "---", "Body."),
+      "02-methods.qmd" = c("---", "title: Methods", "---", "Methods.")
+    )
+  )
+  rule <- get_rule("prelim-order")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("prelim-order fires when appendix appears before body chapter", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "00-abstract.qmd", "appendix-A.qmd", "01-intro.qmd"),
+    qmd_files = list(
+      "00-abstract.qmd" = c("---", "title: Abstract", "---", "Abstract."),
+      "appendix-A.qmd"  = c("---", "title: Appendix A", "---", "Appendix."),
+      "01-intro.qmd"    = c("---", "title: Introduction", "---", "Body.")
+    )
+  )
+  rule <- get_rule("prelim-order")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "prelim-order")
+})
+
+# 5.D.2 — abstract-one-page
+
+test_that("abstract-one-page passes when abstract is short (under 350 words)", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "00-abstract.qmd"),
+    qmd_files = list(
+      "00-abstract.qmd" = c("---", "title: Abstract", "---", "This is a short abstract.")
+    )
+  )
+  rule <- get_rule("abstract-one-page")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("abstract-one-page fires when abstract exceeds 350 words", {
+  long_text <- paste(rep("word", 400), collapse = " ")
+  root <- make_mock_project(
+    chapters = c("index.qmd", "00-abstract.qmd"),
+    qmd_files = list(
+      "00-abstract.qmd" = c("---", "title: Abstract", "---", long_text)
+    )
+  )
+  rule <- get_rule("abstract-one-page")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "abstract-one-page")
+  expect_equal(result$severity, "warning")
+})
+
+test_that("abstract-one-page returns NULL when no 00-abstract.qmd chapter exists", {
+  root <- make_mock_project(
+    chapters = c("index.qmd", "01-intro.qmd"),
+    qmd_files = list(
+      "01-intro.qmd" = c("---", "title: Introduction", "---", "Body text.")
+    )
+  )
+  rule <- get_rule("abstract-one-page")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.D.3a — csl-bundled-or-path-exists
+
+test_that("csl-bundled-or-path-exists passes when csl is a bundled name", {
+  root <- make_mock_project(
+    quarto_yaml_extra = c("csl: apa")
+  )
+  rule <- get_rule("csl-bundled-or-path-exists")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("csl-bundled-or-path-exists passes when csl path resolves to an existing file", {
+  root <- make_mock_project()
+  csl_path <- fs::path(root, "my-style.csl")
+  writeLines(c("<style/>"), csl_path)
+  ctx <- build_ctx(root)
+  ctx$quarto_yaml$csl <- "my-style.csl"
+  rule <- get_rule("csl-bundled-or-path-exists")
+  expect_null(rule$check(ctx))
+})
+
+test_that("csl-bundled-or-path-exists fires when csl points to a nonexistent path", {
+  root <- make_mock_project(
+    quarto_yaml_extra = c("csl: nonexistent-style.csl")
+  )
+  rule <- get_rule("csl-bundled-or-path-exists")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "csl-bundled-or-path-exists")
+  expect_equal(result$severity, "error")
+})
+
+test_that("csl-bundled-or-path-exists returns NULL when csl is not set", {
+  root <- make_mock_project()
+  rule <- get_rule("csl-bundled-or-path-exists")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.D.3b — bibliography-exists
+
+test_that("bibliography-exists passes when bib file exists on disk", {
+  root <- make_mock_project()
+  bib_path <- fs::path(root, "refs.bib")
+  writeLines(c("@article{key, title={T}, author={A}, year={2020}, journal={J}}"), bib_path)
+  ctx <- build_ctx(root)
+  ctx$quarto_yaml$bibliography <- "refs.bib"
+  rule <- get_rule("bibliography-exists")
+  expect_null(rule$check(ctx))
+})
+
+test_that("bibliography-exists fires for a single missing bib file", {
+  root <- make_mock_project(
+    quarto_yaml_extra = c("bibliography: missing-refs.bib")
+  )
+  rule <- get_rule("bibliography-exists")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "bibliography-exists")
+  expect_equal(result$severity, "error")
+})
+
+test_that("bibliography-exists accumulates findings for multiple missing bib files", {
+  root <- make_mock_project()
+  ctx <- build_ctx(root)
+  ctx$quarto_yaml$bibliography <- c("missing1.bib", "missing2.bib", "missing3.bib")
+  rule <- get_rule("bibliography-exists")
+  result <- rule$check(ctx)
+  expect_type(result, "list")
+  expect_equal(length(result), 3L)
+  for (f in result) expect_equal(f$rule_id, "bibliography-exists")
+})
+
+test_that("bibliography-exists returns NULL when bibliography is not set", {
+  root <- make_mock_project()
+  rule <- get_rule("bibliography-exists")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
 })

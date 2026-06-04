@@ -502,6 +502,142 @@ rule_copyright_author_match <- function() list(
   rationale  = "The copyright statement refers to 'the author of this thesis'; the author name in the partial should match the candidate metadata so a mismatch (e.g., from copy-pasting a previous candidate's project) is caught early."
 )
 
+#' Rule: prelim chapters must appear before body chapters before appendices
+#' @return A rule spec list.
+#' @keywords internal
+rule_prelim_order <- function() list(
+  id         = "prelim-order",
+  policy_ref = "\\u00a78.1",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    chapters <- names(ctx$qmd_files)
+    if (length(chapters) < 2) return(NULL)
+    roles <- vapply(ctx$qmd_files, function(f) f$role, character(1))
+    # Strip index.qmd and bibliography entries from the order check
+    keep <- !grepl("(^|/)index\\.qmd$", chapters) & roles %in% c("prelim", "body", "appendix")
+    chapters <- chapters[keep]
+    roles    <- roles[keep]
+    if (length(chapters) < 2) return(NULL)
+    # Verify ordering: prelim < body < appendix
+    role_rank <- match(roles, c("prelim", "body", "appendix"))
+    if (any(diff(role_rank) < 0)) {
+      bad_idx <- which(diff(role_rank) < 0)[1] + 1L
+      return(list(
+        rule_id    = "prelim-order",
+        severity   = "error",
+        message    = cli::format_inline(
+          "Chapter ordering violates \\u00a78.1: {.path {chapters[bad_idx]}} ({roles[bad_idx]}) appears after a later-role chapter."
+        ),
+        location   = list(file = "_quarto.yml"),
+        policy_ref = "\\u00a78.1",
+        hint       = "Reorder _quarto.yml book.chapters so all 00-prelim files come before 01-body files, and appendices come last (use 'appendices' for appendix files)."
+      ))
+    }
+    NULL
+  },
+  rationale  = "Policy \\u00a78.1 mandates a specific order of preliminary pages, then main body, then appendices."
+)
+
+#' Rule: abstract source must be short enough to fit on one rendered page
+#' @return A rule spec list.
+#' @keywords internal
+rule_abstract_one_page <- function() list(
+  id         = "abstract-one-page",
+  policy_ref = "\\u00a78.1.e",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "warning",
+  check      = function(ctx) {
+    chapters <- names(ctx$qmd_files)
+    abstract_files <- chapters[grepl("00-abstract", chapters, ignore.case = TRUE)]
+    if (length(abstract_files) == 0) return(NULL)
+    f <- abstract_files[[1]]
+    abs_path <- file.path(ctx$project_path, f)
+    if (!file.exists(abs_path)) return(NULL)
+    wc <- word_count_text(readLines(abs_path, warn = FALSE, encoding = "UTF-8"))
+    if (wc <= 350) return(NULL)
+    list(
+      rule_id    = "abstract-one-page",
+      severity   = "warning",
+      message    = cli::format_inline(
+        "abstract source is {.val {wc}} words; the rendered page may exceed one page (policy \\u00a78.1.e)."
+      ),
+      location   = list(file = f),
+      policy_ref = "\\u00a78.1.e",
+      hint       = "Tighten the abstract to under ~350 words for A4 / 12pt / 1.5 spacing."
+    )
+  },
+  rationale  = "Policy \\u00a78.1.e mandates that the abstract not exceed one page. The source-phase check is a heuristic; the PDF-phase rule (v0.2) confirms the rendered page count."
+)
+
+#' Rule: csl setting must be a bundled style or an existing file path
+#' @return A rule spec list.
+#' @keywords internal
+rule_csl_bundled_or_path_exists <- function() list(
+  id         = "csl-bundled-or-path-exists",
+  policy_ref = "\\u00a77.2",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    csl <- ctx$quarto_yaml$csl %||% ctx$front_matter$csl
+    if (is.null(csl)) return(NULL)
+    # csl may be a file path or a bundled style name (without .csl extension)
+    bundled <- tryCatch(list_csl()$name, error = function(e) character(0))
+    if (csl %in% bundled) return(NULL)
+    # Try as relative path from project root
+    abs <- file.path(ctx$project_path, csl)
+    if (file.exists(abs)) return(NULL)
+    # Try as absolute path
+    if (file.exists(csl)) return(NULL)
+    list(
+      rule_id    = "csl-bundled-or-path-exists",
+      severity   = "error",
+      message    = cli::format_inline("csl {.val {csl}} is not a bundled style and the file does not exist."),
+      location   = list(file = "_quarto.yml"),
+      policy_ref = "\\u00a77.2",
+      hint       = paste0("Use one of the bundled styles (", paste(bundled, collapse = ", "),
+                          ") or check the path.")
+    )
+  },
+  rationale  = "Policy \\u00a77.2 lets the candidate pick a citation style but it must be consistently applied; an unresolvable csl: setting means citations will silently fall back to Pandoc default."
+)
+
+#' Rule: every bibliography file listed must exist on disk
+#' @return A rule spec list.
+#' @keywords internal
+rule_bibliography_exists <- function() list(
+  id         = "bibliography-exists",
+  policy_ref = "\\u00a77.2",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    bib <- ctx$quarto_yaml$bibliography %||% ctx$front_matter$bibliography
+    if (is.null(bib)) return(NULL)
+    bib <- as.character(bib)
+    out <- list()
+    for (b in bib) {
+      abs <- file.path(ctx$project_path, b)
+      if (file.exists(abs) || file.exists(b)) next
+      out <- c(out, list(list(
+        rule_id    = "bibliography-exists",
+        severity   = "error",
+        message    = cli::format_inline("bibliography file {.path {b}} does not exist."),
+        location   = list(file = "_quarto.yml"),
+        policy_ref = "\\u00a77.2",
+        hint       = paste0("Create the file or remove it from bibliography:")
+      )))
+    }
+    if (length(out) == 0) return(NULL)
+    if (length(out) == 1) return(out[[1]])
+    out
+  },
+  rationale  = "Bibliography files must exist on disk; a missing file means citations silently render as empty."
+)
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -529,7 +665,11 @@ rule_registry <- function() {
     rule_title_page_statement(),
     rule_declaration_text(),
     rule_copyright_text(),
-    rule_copyright_author_match()
+    rule_copyright_author_match(),
+    rule_prelim_order(),
+    rule_abstract_one_page(),
+    rule_csl_bundled_or_path_exists(),
+    rule_bibliography_exists()
   )
 }
 
