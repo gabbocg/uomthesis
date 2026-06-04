@@ -97,3 +97,21 @@ test_that("thesis-format passes for 'standard'", {
   ctx  <- build_ctx(fixture_path("mini-project"))
   expect_null(rule$check(ctx))
 })
+
+test_that("degree-faculty-school accumulates findings for multiple wrong fields", {
+  rule <- get_rule("degree-faculty-school")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$degree  <- "DPhil"
+  ctx$metadata$faculty <- "Engineering"
+  ctx$metadata$school  <- "Hogwarts"
+  result <- rule$check(ctx)
+  expect_type(result, "list")
+  # The result is a list of three findings — confirm by checking it's a list-of-lists
+  expect_true(length(result) == 3)
+  # Each element should look like a finding (have $rule_id)
+  for (f in result) expect_equal(f$rule_id, "degree-faculty-school")
+})
+
+test_that("get_rule errors with class uomthesis_unknown_rule on unknown id", {
+  expect_error(get_rule("does-not-exist"), class = "uomthesis_unknown_rule")
+})

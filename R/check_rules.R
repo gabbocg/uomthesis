@@ -14,6 +14,12 @@ NULL
 #'   function.
 #' @keywords internal
 build_ctx <- function(project_path, rendered_pdf = NULL) {
+  if (!is.null(rendered_pdf)) {
+    cli::cli_warn(c(
+      "PDF-phase rules are not yet implemented (planned for v0.2).",
+      i = "{.arg rendered_pdf} will be ignored; only source-phase rules will run."
+    ))
+  }
   meta     <- read_uomthesis_metadata(project_path)
   qy       <- yaml::read_yaml(file.path(project_path, "_quarto.yml"))
   chapters <- as.character(qy$book$chapters %||% c())
@@ -106,9 +112,10 @@ rule_degree_faculty_school <- function() {
     check      = function(ctx) {
       meta <- ctx$metadata
       p    <- ctx$policy
+      out  <- list()
 
       if (!is.null(meta$degree) && !meta$degree %in% p$allowed_degrees) {
-        return(list(
+        out <- c(out, list(list(
           rule_id    = "degree-faculty-school",
           severity   = "error",
           message    = cli::format_inline(
@@ -119,10 +126,10 @@ rule_degree_faculty_school <- function() {
           hint       = paste0(
             "Use one of: ", paste(p$allowed_degrees, collapse = ", "), "."
           )
-        ))
+        )))
       }
       if (!is.null(meta$faculty) && !meta$faculty %in% p$allowed_faculties) {
-        return(list(
+        out <- c(out, list(list(
           rule_id    = "degree-faculty-school",
           severity   = "error",
           message    = cli::format_inline(
@@ -133,10 +140,10 @@ rule_degree_faculty_school <- function() {
           hint       = paste0(
             "Use one of: ", paste(p$allowed_faculties, collapse = ", "), "."
           )
-        ))
+        )))
       }
       if (!is.null(meta$school) && !meta$school %in% p$allowed_schools) {
-        return(list(
+        out <- c(out, list(list(
           rule_id    = "degree-faculty-school",
           severity   = "error",
           message    = cli::format_inline(
@@ -147,9 +154,11 @@ rule_degree_faculty_school <- function() {
           hint       = paste0(
             "Use one of: ", paste(p$allowed_schools, collapse = ", "), "."
           )
-        ))
+        )))
       }
-      NULL
+      if (length(out) == 0) return(NULL)
+      if (length(out) == 1) return(out[[1]])
+      out  # list of finding lists
     }
   )
 }

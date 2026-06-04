@@ -27,7 +27,13 @@ validate_metadata <- function(project = ".") {
   for (r in rule_registry()) {
     if (!r$id %in% metadata_rule_ids) next
     f <- r$check(ctx)
-    if (!is.null(f)) findings <- c(findings, list(f))
+    if (is.null(f)) next
+    # Distinguish "single finding" from "list of findings"
+    if (!is.null(f$rule_id)) {
+      findings <- c(findings, list(f))    # single finding
+    } else {
+      findings <- c(findings, f)          # multiple findings
+    }
   }
 
   out <- list(ok = length(findings) == 0, findings = findings)
