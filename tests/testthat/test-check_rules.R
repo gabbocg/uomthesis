@@ -115,3 +115,197 @@ test_that("degree-faculty-school accumulates findings for multiple wrong fields"
 test_that("get_rule errors with class uomthesis_unknown_rule on unknown id", {
   expect_error(get_rule("does-not-exist"), class = "uomthesis_unknown_rule")
 })
+
+# ---------------------------------------------------------------------------
+# Phase 5B: YAML-knob rules
+# ---------------------------------------------------------------------------
+
+# build_ctx exposes ctx$front_matter
+
+test_that("build_ctx exposes front_matter list", {
+  ctx <- build_ctx(fixture_path("mini-project"))
+  expect_true(is.list(ctx$front_matter))
+  expect_true("uomthesis" %in% names(ctx$front_matter))
+})
+
+# 5.B.1 font-allowed
+
+test_that("font-allowed fires on out-of-set font", {
+  rule <- get_rule("font-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$mainfont <- "Comic Sans"
+  expect_false(is.null(rule$check(ctx)))
+  expect_equal(rule$check(ctx)$rule_id, "font-allowed")
+  expect_equal(rule$check(ctx)$severity, "error")
+})
+
+test_that("font-allowed passes for an allowed font", {
+  rule <- get_rule("font-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$mainfont <- "Times New Roman"
+  expect_null(rule$check(ctx))
+})
+
+test_that("font-allowed passes when mainfont is unset (Quarto default)", {
+  rule <- get_rule("font-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$mainfont <- NULL
+  expect_null(rule$check(ctx))
+})
+
+# 5.B.2 font-engine-compat
+
+test_that("font-engine-compat fires for pdflatex with unsafe font", {
+  rule <- get_rule("font-engine-compat")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter[["pdf-engine"]] <- "pdflatex"
+  ctx$front_matter$mainfont        <- "Arial"
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+  expect_equal(finding$rule_id, "font-engine-compat")
+  expect_equal(finding$severity, "error")
+})
+
+test_that("font-engine-compat passes for pdflatex with pdflatex-safe font", {
+  rule <- get_rule("font-engine-compat")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter[["pdf-engine"]] <- "pdflatex"
+  ctx$front_matter$mainfont        <- "Times New Roman"
+  expect_null(rule$check(ctx))
+})
+
+test_that("font-engine-compat passes for lualatex even with non-pdflatex-safe font", {
+  rule <- get_rule("font-engine-compat")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter[["pdf-engine"]] <- "lualatex"
+  ctx$front_matter$mainfont        <- "Arial"
+  expect_null(rule$check(ctx))
+})
+
+test_that("font-engine-compat passes when pdf-engine is unset", {
+  rule <- get_rule("font-engine-compat")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter[["pdf-engine"]] <- NULL
+  ctx$front_matter$mainfont        <- "Arial"
+  expect_null(rule$check(ctx))
+})
+
+# 5.B.3 linespacing-allowed
+
+test_that("linespacing-allowed fires on non-allowed linestretch", {
+  rule <- get_rule("linespacing-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$linestretch <- 1.0
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+  expect_equal(finding$rule_id, "linespacing-allowed")
+  expect_equal(finding$severity, "error")
+})
+
+test_that("linespacing-allowed passes for linestretch 1.5", {
+  rule <- get_rule("linespacing-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$linestretch <- 1.5
+  expect_null(rule$check(ctx))
+})
+
+test_that("linespacing-allowed passes for linestretch 2.0", {
+  rule <- get_rule("linespacing-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$linestretch <- 2.0
+  expect_null(rule$check(ctx))
+})
+
+test_that("linespacing-allowed passes when linestretch is unset", {
+  rule <- get_rule("linespacing-allowed")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$linestretch <- NULL
+  expect_null(rule$check(ctx))
+})
+
+# 5.B.4 ai-disclosure-shape
+
+test_that("ai-disclosure-shape fires when include is true but tools is empty", {
+  rule <- get_rule("ai-disclosure-shape")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$ai_disclosure <- list(include = TRUE, tools = list())
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+  expect_equal(finding$rule_id, "ai-disclosure-shape")
+  expect_equal(finding$severity, "warning")
+})
+
+test_that("ai-disclosure-shape fires when include is true and tools is missing", {
+  rule <- get_rule("ai-disclosure-shape")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$ai_disclosure <- list(include = TRUE)
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+})
+
+test_that("ai-disclosure-shape passes when include is true and tools is non-empty", {
+  rule <- get_rule("ai-disclosure-shape")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$ai_disclosure <- list(include = TRUE, tools = list("ChatGPT-5"))
+  expect_null(rule$check(ctx))
+})
+
+test_that("ai-disclosure-shape passes when include is false", {
+  rule <- get_rule("ai-disclosure-shape")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$ai_disclosure <- list(include = FALSE, tools = list())
+  expect_null(rule$check(ctx))
+})
+
+test_that("ai-disclosure-shape passes when ai_disclosure is absent", {
+  rule <- get_rule("ai-disclosure-shape")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$metadata$ai_disclosure <- NULL
+  expect_null(rule$check(ctx))
+})
+
+# 5.B.5 english-language
+
+test_that("english-language fires on non-English lang", {
+  rule <- get_rule("english-language")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$lang <- "fr"
+  finding <- rule$check(ctx)
+  expect_false(is.null(finding))
+  expect_equal(finding$rule_id, "english-language")
+  expect_equal(finding$severity, "warning")
+})
+
+test_that("english-language passes for lang en-GB", {
+  rule <- get_rule("english-language")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$lang <- "en-GB"
+  expect_null(rule$check(ctx))
+})
+
+test_that("english-language passes for lang en-US", {
+  rule <- get_rule("english-language")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$lang <- "en-US"
+  expect_null(rule$check(ctx))
+})
+
+test_that("english-language passes for lang en", {
+  rule <- get_rule("english-language")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$lang <- "en"
+  expect_null(rule$check(ctx))
+})
+
+test_that("english-language passes when lang is unset", {
+  rule <- get_rule("english-language")
+  ctx  <- build_ctx(fixture_path("mini-project"))
+  ctx$front_matter$lang <- NULL
+  expect_null(rule$check(ctx))
+})
+
+# rule_registry now has 9 rules
+
+test_that("rule_registry returns exactly 9 rules", {
+  expect_equal(length(rule_registry()), 9L)
+})

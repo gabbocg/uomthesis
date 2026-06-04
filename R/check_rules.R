@@ -20,9 +20,11 @@ build_ctx <- function(project_path, rendered_pdf = NULL) {
       i = "{.arg rendered_pdf} will be ignored; only source-phase rules will run."
     ))
   }
-  meta     <- read_uomthesis_metadata(project_path)
-  qy       <- yaml::read_yaml(file.path(project_path, "_quarto.yml"))
-  chapters <- as.character(qy$book$chapters %||% c())
+  idx          <- file.path(project_path, "index.qmd")
+  front_matter <- parse_qmd_yaml(idx)
+  meta         <- front_matter$uomthesis %||% list()
+  qy           <- yaml::read_yaml(file.path(project_path, "_quarto.yml"))
+  chapters     <- as.character(qy$book$chapters %||% c())
   qmd_files <- stats::setNames(
     lapply(chapters, function(f) {
       list(path = f, role = classify_qmd_file(f))
@@ -32,6 +34,7 @@ build_ctx <- function(project_path, rendered_pdf = NULL) {
   list(
     project_path = project_path,
     metadata     = meta,
+    front_matter = front_matter,
     quarto_yaml  = qy,
     qmd_files    = qmd_files,
     qmd_text     = new.env(parent = emptyenv()),
@@ -223,6 +226,135 @@ rule_thesis_format <- function() {
   )
 }
 
+#' Rule: mainfont must be in the allowed set
+#' @return A rule spec list.
+#' @keywords internal
+rule_font_allowed <- function() list(
+  id         = "font-allowed",
+  policy_ref = "\u00a77.1",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    mf <- ctx$front_matter$mainfont
+    if (is.null(mf) || mf %in% ctx$policy$allowed_fonts) return(NULL)
+    list(
+      rule_id    = "font-allowed",
+      severity   = "error",
+      message    = cli::format_inline("mainfont {.val {mf}} is not in the allowed list."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a77.1",
+      hint       = paste0("Use one of: ", paste(ctx$policy$allowed_fonts, collapse = ", "), ".")
+    )
+  },
+  rationale  = "Policy \u00a77.1 lists the permitted fonts; any other choice will be rejected by the Doctoral Academy."
+)
+
+#' Rule: mainfont must be pdflatex-safe when pdf-engine is pdflatex
+#' @return A rule spec list.
+#' @keywords internal
+rule_font_engine_compat <- function() list(
+  id         = "font-engine-compat",
+  policy_ref = "\u00a77.1",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    engine <- ctx$front_matter[["pdf-engine"]]
+    mf     <- ctx$front_matter$mainfont
+    if (is.null(engine) || engine != "pdflatex") return(NULL)
+    if (is.null(mf) || mf %in% ctx$policy$pdflatex_safe_fonts) return(NULL)
+    list(
+      rule_id    = "font-engine-compat",
+      severity   = "error",
+      message    = cli::format_inline("mainfont {.val {mf}} is not safe under pdflatex."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a77.1",
+      hint       = paste0("Switch to lualatex/xelatex, or pick from: ",
+                          paste(ctx$policy$pdflatex_safe_fonts, collapse = ", "), ".")
+    )
+  },
+  rationale  = "Under pdflatex only a limited subset of policy \u00a77.1 fonts render correctly without extra packaging."
+)
+
+#' Rule: linestretch must be 1.5 or 2.0 when set
+#' @return A rule spec list.
+#' @keywords internal
+rule_linespacing_allowed <- function() list(
+  id         = "linespacing-allowed",
+  policy_ref = "\u00a77.1",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    ls <- ctx$front_matter$linestretch
+    if (is.null(ls)) return(NULL)
+    if (ls %in% ctx$policy$allowed_linestretch) return(NULL)
+    list(
+      rule_id    = "linespacing-allowed",
+      severity   = "error",
+      message    = cli::format_inline("linestretch {.val {ls}} must be 1.5 or 2.0."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a77.1",
+      hint       = "Set linestretch: 1.5 or linestretch: 2.0."
+    )
+  },
+  rationale  = "Policy \u00a77.1 mandates double or 1.5 line spacing for main text."
+)
+
+#' Rule: ai_disclosure.include=true requires a non-empty tools list
+#' @return A rule spec list.
+#' @keywords internal
+rule_ai_disclosure_shape <- function() list(
+  id         = "ai-disclosure-shape",
+  policy_ref = "\u00a79.1.d",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "warning",
+  check      = function(ctx) {
+    ai <- ctx$metadata$ai_disclosure
+    if (is.null(ai) || !isTRUE(ai$include)) return(NULL)
+    tools <- ai$tools
+    if (is.null(tools) || length(tools) == 0) {
+      return(list(
+        rule_id    = "ai-disclosure-shape",
+        severity   = "warning",
+        message    = "ai_disclosure.include is true but tools list is empty.",
+        location   = list(file = "index.qmd"),
+        policy_ref = "\u00a79.1.d",
+        hint       = "Add the tool(s) you used, e.g., tools: [ChatGPT-5]."
+      ))
+    }
+    NULL
+  },
+  rationale  = "Policy \u00a79.1.d expects authors who declare AI use to name the specific tool(s) used."
+)
+
+#' Rule: lang must be English when set
+#' @return A rule spec list.
+#' @keywords internal
+rule_english_language <- function() list(
+  id         = "english-language",
+  policy_ref = "\u00a76.1",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "warning",
+  check      = function(ctx) {
+    lang <- ctx$front_matter$lang
+    if (is.null(lang)) return(NULL)
+    if (lang %in% c("en", "en-GB", "en-US")) return(NULL)
+    list(
+      rule_id    = "english-language",
+      severity   = "warning",
+      message    = cli::format_inline("lang {.val {lang}} is not English."),
+      location   = list(file = "index.qmd"),
+      policy_ref = "\u00a76.1",
+      hint       = "Policy \u00a76.1 requires UK English unless prior approval. Use lang: en-GB."
+    )
+  },
+  rationale  = "Policy \u00a76.1 requires the thesis to be written in UK English (US English allowed where discipline standards dictate); other languages require advance approval."
+)
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -241,7 +373,12 @@ rule_registry <- function() {
     rule_metadata_complete(),
     rule_degree_faculty_school(),
     rule_year_not_month(),
-    rule_thesis_format()
+    rule_thesis_format(),
+    rule_font_allowed(),
+    rule_font_engine_compat(),
+    rule_linespacing_allowed(),
+    rule_ai_disclosure_shape(),
+    rule_english_language()
   )
 }
 
