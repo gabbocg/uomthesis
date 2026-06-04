@@ -304,8 +304,265 @@ test_that("english-language passes when lang is unset", {
   expect_null(rule$check(ctx))
 })
 
-# rule_registry now has 9 rules
+# rule_registry now has 13 rules (updated in Phase 5C)
 
-test_that("rule_registry returns exactly 9 rules", {
-  expect_equal(length(rule_registry()), 9L)
+# ---------------------------------------------------------------------------
+# Phase 5C: text-matching rules (partial template files)
+# ---------------------------------------------------------------------------
+
+# Helper: create a temporary mock project with optional partial files
+make_mock_project <- function(thesis_format = "standard",
+                              degree = "PhD",
+                              faculty = "Humanities",
+                              school = "Alliance Manchester Business School",
+                              forename = "Jane",
+                              middle_initial = "Q",
+                              surname = "Doe",
+                              year = 2027,
+                              declaration_variant = "either",
+                              partials = list()) {
+  root <- withr::local_tempdir(.local_envir = parent.frame())
+  fs::file_create(fs::path(root, "_quarto.yml"))
+  writeLines(c(
+    "project:", "  type: book",
+    "book:", "  chapters:", "    - index.qmd"
+  ), fs::path(root, "_quarto.yml"))
+  writeLines(c(
+    "---",
+    "title: Mock",
+    "uomthesis:",
+    "  candidate:",
+    paste0("    forename: ", forename),
+    paste0("    middle_initial: ", middle_initial),
+    paste0("    surname: ", surname),
+    paste0("  degree: ", degree),
+    paste0("  faculty: ", faculty),
+    paste0("  school: ", school),
+    paste0("  year: ", year),
+    paste0("  thesis_format: ", thesis_format),
+    "  declaration:",
+    paste0("    variant: ", declaration_variant),
+    "---"
+  ), fs::path(root, "index.qmd"))
+  partial_dir <- fs::path(root, "_extensions", paste0("uomthesis-", thesis_format), "partials")
+  fs::dir_create(partial_dir)
+  for (nm in names(partials)) {
+    writeLines(partials[[nm]], fs::path(partial_dir, nm))
+  }
+  root
+}
+
+# 5.C.1 — title-page-statement
+
+test_that("title-page-statement passes when partial contains the policy statement", {
+  policy_text <- glue::glue(
+    policy_constants()$title_page_statement,
+    degree = "PhD", faculty = "Humanities"
+  )
+  root <- make_mock_project(partials = list(
+    "title-page.tex" = c("\\begin{titlepage}", policy_text, "\\end{titlepage}")
+  ))
+  rule <- get_rule("title-page-statement")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("title-page-statement fires when statement is altered", {
+  root <- make_mock_project(partials = list(
+    "title-page.tex" = c("\\begin{titlepage}", "A thesis for Manchester.", "\\end{titlepage}")
+  ))
+  rule <- get_rule("title-page-statement")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "title-page-statement")
+  expect_equal(result$severity, "error")
+})
+
+test_that("title-page-statement returns NULL when partial doesn't exist", {
+  root <- make_mock_project(partials = list())
+  rule <- get_rule("title-page-statement")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("title-page-statement passes with whitespace-normalised statement", {
+  # Statement split across lines (simulates realistic TeX indentation)
+  policy_text <- "A thesis submitted to The University of Manchester\n  for the degree of PhD\n  in the Faculty of Humanities."
+  root <- make_mock_project(partials = list(
+    "title-page.tex" = c("\\begin{titlepage}", policy_text, "\\end{titlepage}")
+  ))
+  rule <- get_rule("title-page-statement")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.C.2 — declaration-text
+
+test_that("declaration-text passes with correct 'either' variant", {
+  decl_text <- policy_constants()$declaration_either
+  root <- make_mock_project(
+    declaration_variant = "either",
+    partials = list(
+      "declaration.tex" = c("\\section*{Declaration}", decl_text)
+    )
+  )
+  rule <- get_rule("declaration-text")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("declaration-text passes with correct 'or' variant", {
+  decl_text <- policy_constants()$declaration_or
+  root <- make_mock_project(
+    declaration_variant = "or",
+    partials = list(
+      "declaration.tex" = c("\\section*{Declaration}", decl_text)
+    )
+  )
+  rule <- get_rule("declaration-text")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("declaration-text fires when text is altered", {
+  root <- make_mock_project(
+    declaration_variant = "either",
+    partials = list(
+      "declaration.tex" = c("I declare something different here.")
+    )
+  )
+  rule <- get_rule("declaration-text")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "declaration-text")
+  expect_equal(result$severity, "error")
+})
+
+test_that("declaration-text fires when 'or' text is used but variant is 'either'", {
+  # Only contains the OR text but metadata says either
+  decl_text <- policy_constants()$declaration_or
+  root <- make_mock_project(
+    declaration_variant = "either",
+    partials = list(
+      "declaration.tex" = c(decl_text)
+    )
+  )
+  rule <- get_rule("declaration-text")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+})
+
+test_that("declaration-text returns NULL when partial doesn't exist", {
+  root <- make_mock_project(partials = list())
+  rule <- get_rule("declaration-text")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.C.3 — copyright-text
+
+test_that("copyright-text passes when all four bullets are present", {
+  bullets <- policy_constants()$copyright_bullets
+  root <- make_mock_project(partials = list(
+    "copyright.tex" = c("\\section*{Copyright}", bullets)
+  ))
+  rule <- get_rule("copyright-text")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("copyright-text fires a single finding when one bullet is missing", {
+  bullets <- policy_constants()$copyright_bullets
+  root <- make_mock_project(partials = list(
+    # Omit bullet 2 — keep 1, 3, 4
+    "copyright.tex" = c(bullets[1], bullets[3], bullets[4])
+  ))
+  rule <- get_rule("copyright-text")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  # Single finding is returned as a plain list (not a list of lists)
+  expect_equal(result$rule_id, "copyright-text")
+  expect_equal(result$severity, "error")
+})
+
+test_that("copyright-text accumulates multiple findings when several bullets are missing", {
+  bullets <- policy_constants()$copyright_bullets
+  root <- make_mock_project(partials = list(
+    # Only bullet 1 present
+    "copyright.tex" = c(bullets[1])
+  ))
+  rule <- get_rule("copyright-text")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_type(result, "list")
+  # Should have 3 findings (bullets 2, 3, 4 missing)
+  expect_equal(length(result), 3L)
+  for (f in result) expect_equal(f$rule_id, "copyright-text")
+})
+
+test_that("copyright-text returns NULL when partial doesn't exist", {
+  root <- make_mock_project(partials = list())
+  rule <- get_rule("copyright-text")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.C.4 — copyright-author-match
+
+test_that("copyright-author-match passes when candidate name is in partial", {
+  root <- make_mock_project(
+    forename = "Jane", surname = "Doe",
+    partials = list(
+      "copyright.tex" = c("Copyright 2027 Jane Q. Doe. All rights reserved.")
+    )
+  )
+  rule <- get_rule("copyright-author-match")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("copyright-author-match fires when candidate name is absent", {
+  root <- make_mock_project(
+    forename = "Jane", surname = "Doe",
+    partials = list(
+      "copyright.tex" = c("Copyright 2027 John Smith. All rights reserved.")
+    )
+  )
+  rule <- get_rule("copyright-author-match")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "copyright-author-match")
+  expect_equal(result$severity, "error")
+})
+
+test_that("copyright-author-match returns NULL when partial doesn't exist", {
+  root <- make_mock_project(partials = list())
+  rule <- get_rule("copyright-author-match")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("copyright-author-match returns NULL when candidate metadata is absent", {
+  root <- make_mock_project(
+    forename = "Jane", surname = "Doe",
+    partials = list(
+      "copyright.tex" = c("Copyright 2027 John Smith.")
+    )
+  )
+  rule <- get_rule("copyright-author-match")
+  ctx  <- build_ctx(root)
+  # Remove candidate from context
+  ctx$metadata$candidate <- NULL
+  expect_null(rule$check(ctx))
+})
+
+# rule_registry now has 13 rules
+
+test_that("rule_registry returns exactly 13 rules", {
+  expect_equal(length(rule_registry()), 13L)
 })

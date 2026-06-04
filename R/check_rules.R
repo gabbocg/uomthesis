@@ -59,6 +59,27 @@ ctx_read <- function(ctx, file) {
 }
 
 # ---------------------------------------------------------------------------
+# Partial-file helpers
+# ---------------------------------------------------------------------------
+
+# Find a partial template file in the user's project. Returns the absolute
+# path if present, NULL if not.
+find_partial <- function(ctx, partial_name) {
+  fmt <- ctx$metadata$thesis_format %||% "standard"
+  rel <- file.path("_extensions", paste0("uomthesis-", fmt),
+                   "partials", partial_name)
+  abs <- file.path(ctx$project_path, rel)
+  if (file.exists(abs)) abs else NULL
+}
+
+# Returns TRUE if `body` contains `pattern` after collapsing whitespace
+# in both to single spaces (so newlines and indentation don't defeat the match).
+whitespace_contains <- function(body, pattern) {
+  norm <- function(s) gsub("\\s+", " ", trimws(s))
+  grepl(norm(pattern), norm(body), fixed = TRUE)
+}
+
+# ---------------------------------------------------------------------------
 # Individual rule constructors
 # ---------------------------------------------------------------------------
 
@@ -355,6 +376,132 @@ rule_english_language <- function() list(
   rationale  = "Policy \u00a76.1 requires the thesis to be written in UK English (US English allowed where discipline standards dictate); other languages require advance approval."
 )
 
+#' Rule: title-page.tex must contain the policy-mandated statement
+#' @return A rule spec list.
+#' @keywords internal
+rule_title_page_statement <- function() list(
+  id         = "title-page-statement",
+  policy_ref = "\u00a78.1.b",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    path <- find_partial(ctx, "title-page.tex")
+    if (is.null(path)) return(NULL)
+    reference <- glue::glue(
+      ctx$policy$title_page_statement,
+      degree  = ctx$metadata$degree  %||% "<DEGREE>",
+      faculty = ctx$metadata$faculty %||% "<FACULTY>"
+    )
+    body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
+    if (whitespace_contains(body, reference)) return(NULL)
+    list(
+      rule_id    = "title-page-statement",
+      severity   = "error",
+      message    = "title-page.tex does not contain the policy-mandated statement.",
+      location   = list(file = "_extensions/uomthesis-*/partials/title-page.tex"),
+      policy_ref = "\u00a78.1.b",
+      hint       = paste0("Restore the policy statement: \"", reference, "\".")
+    )
+  },
+  rationale  = "Policy \u00a78.1.b mandates the exact statement \"A thesis submitted to The University of Manchester for the degree of X in the Faculty of Y.\""
+)
+
+#' Rule: declaration.tex must contain the policy declaration text
+#' @return A rule spec list.
+#' @keywords internal
+rule_declaration_text <- function() list(
+  id         = "declaration-text",
+  policy_ref = "\u00a78.1.f",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    path <- find_partial(ctx, "declaration.tex")
+    if (is.null(path)) return(NULL)
+    variant   <- ctx$metadata$declaration$variant %||% "either"
+    reference <- if (variant == "or") ctx$policy$declaration_or
+                 else                  ctx$policy$declaration_either
+    body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
+    if (whitespace_contains(body, reference)) return(NULL)
+    list(
+      rule_id    = "declaration-text",
+      severity   = "error",
+      message    = cli::format_inline("declaration.tex does not contain the policy {.val {variant}} text."),
+      location   = list(file = "_extensions/uomthesis-*/partials/declaration.tex"),
+      policy_ref = "\u00a78.1.f",
+      hint       = "Restore the policy text verbatim, or change uomthesis.declaration.variant if joint authorship applies."
+    )
+  },
+  rationale  = "Policy \u00a78.1.f mandates one of two exact declaration texts (EITHER 'no portion' / OR 'what portion'); altering the text may cause the Doctoral Academy to reject the thesis."
+)
+
+#' Rule: copyright.tex must contain all four policy copyright bullets
+#' @return A rule spec list.
+#' @keywords internal
+rule_copyright_text <- function() list(
+  id         = "copyright-text",
+  policy_ref = "\u00a78.1.g",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    path <- find_partial(ctx, "copyright.tex")
+    if (is.null(path)) return(NULL)
+    body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
+    out <- list()
+    for (i in seq_along(ctx$policy$copyright_bullets)) {
+      bullet <- ctx$policy$copyright_bullets[[i]]
+      if (whitespace_contains(body, bullet)) next
+      out <- c(out, list(list(
+        rule_id    = "copyright-text",
+        severity   = "error",
+        message    = cli::format_inline("copyright.tex is missing or has altered bullet {i}."),
+        location   = list(file = "_extensions/uomthesis-*/partials/copyright.tex"),
+        policy_ref = "\u00a78.1.g",
+        hint       = paste0("Restore bullet ", i, " verbatim: \"", substr(bullet, 1, 80), "...\".")
+      )))
+    }
+    if (length(out) == 0) return(NULL)
+    if (length(out) == 1) return(out[[1]])
+    out
+  },
+  rationale  = "Policy \u00a78.1.g mandates four exact copyright bullets; missing or altered bullets may cause the Doctoral Academy to reject the thesis."
+)
+
+#' Rule: copyright.tex must reference the candidate's name
+#' @return A rule spec list.
+#' @keywords internal
+rule_copyright_author_match <- function() list(
+  id         = "copyright-author-match",
+  policy_ref = "\u00a78.1.g",
+  phase      = "source",
+  formats    = c("standard", "journal"),
+  severity   = "error",
+  check      = function(ctx) {
+    path <- find_partial(ctx, "copyright.tex")
+    if (is.null(path)) return(NULL)
+    cand <- ctx$metadata$candidate
+    if (is.null(cand) || is.null(cand$forename) || is.null(cand$surname)) return(NULL)
+    body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
+    has_forename <- grepl(cand$forename, body, fixed = TRUE)
+    has_surname  <- grepl(cand$surname,  body, fixed = TRUE)
+    if (has_forename && has_surname) return(NULL)
+    list(
+      rule_id    = "copyright-author-match",
+      severity   = "error",
+      message    = cli::format_inline(
+        "copyright.tex does not appear to reference the candidate ({cand$forename} {cand$surname})."
+      ),
+      location   = list(file = "_extensions/uomthesis-*/partials/copyright.tex"),
+      policy_ref = "\u00a78.1.g",
+      hint       = paste0("The author named in the copyright statement should match index.qmd: ",
+                          cand$forename, " ", cand$surname, ".")
+    )
+  },
+  rationale  = "The copyright statement refers to 'the author of this thesis'; the author name in the partial should match the candidate metadata so a mismatch (e.g., from copy-pasting a previous candidate's project) is caught early."
+)
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -378,7 +525,11 @@ rule_registry <- function() {
     rule_font_engine_compat(),
     rule_linespacing_allowed(),
     rule_ai_disclosure_shape(),
-    rule_english_language()
+    rule_english_language(),
+    rule_title_page_statement(),
+    rule_declaration_text(),
+    rule_copyright_text(),
+    rule_copyright_author_match()
   )
 }
 
