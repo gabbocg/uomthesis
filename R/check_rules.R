@@ -638,6 +638,90 @@ rule_bibliography_exists <- function() list(
   rationale  = "Bibliography files must exist on disk; a missing file means citations silently render as empty."
 )
 
+#' Rule: journal-format thesis must include a rationale partial
+#' @return A rule spec list.
+#' @keywords internal
+rule_journal_rationale_present <- function() list(
+  id         = "journal-rationale-present",
+  policy_ref = "\u00a713.10",
+  phase      = "source",
+  formats    = "journal",
+  severity   = "error",
+  check      = function(ctx) {
+    ext_dir <- file.path(ctx$project_path, "_extensions", "uomthesis-journal")
+    if (!dir.exists(ext_dir)) return(NULL)
+    partial <- file.path(ext_dir, "partials", "rationale.tex")
+    if (!file.exists(partial)) {
+      return(list(
+        rule_id    = "journal-rationale-present",
+        severity   = "error",
+        message    = "Journal format thesis is missing the required rationale partial.",
+        location   = list(file = "_extensions/uomthesis-journal/partials/rationale.tex"),
+        policy_ref = "\u00a713.10",
+        hint       = "Add a rationale.tex partial; see Quarto extension scaffolding."
+      ))
+    }
+    lines <- readLines(partial, warn = FALSE, encoding = "UTF-8")
+    body  <- paste(lines, collapse = " ")
+    body  <- gsub("[%].*", "", body)  # strip TeX comments
+    if (nchar(trimws(body)) < 50) {
+      return(list(
+        rule_id    = "journal-rationale-present",
+        severity   = "error",
+        message    = "Rationale partial exists but is empty or near-empty.",
+        location   = list(file = "_extensions/uomthesis-journal/partials/rationale.tex"),
+        policy_ref = "\u00a713.10",
+        hint       = paste0("Policy \u00a713.10 requires a rationale for journal-format submission ",
+                            "and an account of how the thesis has been constructed.")
+      ))
+    }
+    NULL
+  },
+  rationale  = paste0("Policy \u00a713.10 mandates that journal-format theses include a rationale ",
+                      "section explaining the format choice and the thesis structure.")
+)
+
+#' Rule: journal body chapters must carry a contribution statement
+#' @return A rule spec list.
+#' @keywords internal
+rule_journal_contribution_stmts <- function() list(
+  id         = "journal-contribution-stmts",
+  policy_ref = "\u00a713.3",
+  phase      = "source",
+  formats    = "journal",
+  severity   = "warning",
+  check      = function(ctx) {
+    body_files <- vapply(ctx$qmd_files,
+                         function(f) f$role == "body" &&
+                                     !grepl("(^|/)index\\.qmd$", f$path),
+                         logical(1))
+    body_files <- names(ctx$qmd_files)[body_files]
+    if (length(body_files) == 0) return(NULL)
+    missing <- character(0)
+    for (f in body_files) {
+      abs <- file.path(ctx$project_path, f)
+      if (!file.exists(abs)) next
+      lines <- readLines(abs, warn = FALSE, encoding = "UTF-8")
+      has <- any(grepl("(^|#\\|\\s*|\\{|\\s)contribution\\s*[:=]", lines))
+      if (!has) missing <- c(missing, f)
+    }
+    if (length(missing) == 0) return(NULL)
+    list(
+      rule_id    = "journal-contribution-stmts",
+      severity   = "warning",
+      message    = cli::format_inline(
+        "{length(missing)} body chapter(s) lack a contribution statement: {paste(missing, collapse = ', ')}."
+      ),
+      location   = list(file = missing[[1]]),
+      policy_ref = "\u00a713.3",
+      hint       = paste0("Add a contribution declaration (chunk option, heading attribute, or YAML key) ",
+                          "to each paper-chapter that has co-authors.")
+    )
+  },
+  rationale  = paste0("Policy \u00a713.3 requires explicit clarity about the student's contribution to each ",
+                      "paper-chapter in a journal-format thesis; omitting this is a common reason for examiner concern.")
+)
+
 # ---------------------------------------------------------------------------
 # Registry
 # ---------------------------------------------------------------------------
@@ -669,7 +753,9 @@ rule_registry <- function() {
     rule_prelim_order(),
     rule_abstract_one_page(),
     rule_csl_bundled_or_path_exists(),
-    rule_bibliography_exists()
+    rule_bibliography_exists(),
+    rule_journal_rationale_present(),
+    rule_journal_contribution_stmts()
   )
 }
 

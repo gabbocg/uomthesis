@@ -326,7 +326,8 @@ make_mock_project <- function(thesis_format = "standard",
                               partials = list(),
                               chapters = NULL,
                               quarto_yaml_extra = character(0),
-                              qmd_files = list()) {
+                              qmd_files = list(),
+                              create_extension_dir = TRUE) {
   root <- withr::local_tempdir(.local_envir = parent.frame())
   chapter_list <- if (!is.null(chapters)) chapters else c("index.qmd")
   chapter_lines <- vapply(chapter_list, function(f) paste0("    - ", f), character(1))
@@ -354,10 +355,12 @@ make_mock_project <- function(thesis_format = "standard",
     paste0("    variant: ", declaration_variant),
     "---"
   ), fs::path(root, "index.qmd"))
-  partial_dir <- fs::path(root, "_extensions", paste0("uomthesis-", thesis_format), "partials")
-  fs::dir_create(partial_dir)
-  for (nm in names(partials)) {
-    writeLines(partials[[nm]], fs::path(partial_dir, nm))
+  if (create_extension_dir) {
+    partial_dir <- fs::path(root, "_extensions", paste0("uomthesis-", thesis_format), "partials")
+    fs::dir_create(partial_dir)
+    for (nm in names(partials)) {
+      writeLines(partials[[nm]], fs::path(partial_dir, nm))
+    }
   }
   # Write any extra qmd files requested by the test
   for (nm in names(qmd_files)) {
@@ -577,9 +580,9 @@ test_that("copyright-author-match returns NULL when candidate metadata is absent
   expect_null(rule$check(ctx))
 })
 
-# rule_registry now has 17 rules (13 from Phase 5C + 4 from Phase 5D)
-test_that("rule_registry returns exactly 17 rules", {
-  expect_equal(length(rule_registry()), 17L)
+# rule_registry now has 19 rules (17 from Phase 5D + 2 from Phase 5E)
+test_that("rule_registry returns exactly 19 rules", {
+  expect_equal(length(rule_registry()), 19L)
 })
 
 # ---------------------------------------------------------------------------
@@ -769,6 +772,140 @@ test_that("bibliography-exists accumulates findings for multiple missing bib fil
 test_that("bibliography-exists returns NULL when bibliography is not set", {
   root <- make_mock_project()
   rule <- get_rule("bibliography-exists")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# ---------------------------------------------------------------------------
+# Phase 5E: journal-format-only rules
+# ---------------------------------------------------------------------------
+
+# 5.E.1 — journal-rationale-present
+
+test_that("journal-rationale-present returns NULL when extension dir does not exist", {
+  # create_extension_dir = FALSE means no _extensions/uomthesis-journal/ directory at all
+  root <- make_mock_project(thesis_format = "journal", create_extension_dir = FALSE)
+  rule <- get_rule("journal-rationale-present")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("journal-rationale-present fires when extension dir exists but rationale.tex is missing", {
+  # Extension dir created (no partials arg), but rationale.tex not written
+  root <- make_mock_project(thesis_format = "journal", partials = list())
+  rule <- get_rule("journal-rationale-present")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "journal-rationale-present")
+  expect_equal(result$severity, "error")
+})
+
+test_that("journal-rationale-present fires when rationale.tex exists but is empty or near-empty", {
+  root <- make_mock_project(
+    thesis_format = "journal",
+    partials = list("rationale.tex" = c("% just a comment", ""))
+  )
+  rule <- get_rule("journal-rationale-present")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "journal-rationale-present")
+  expect_equal(result$severity, "error")
+  expect_match(result$message, "empty or near-empty")
+})
+
+test_that("journal-rationale-present passes when rationale.tex has substantive content (>50 chars)", {
+  substantive <- paste0(
+    "This thesis is submitted in journal format because the research has been ",
+    "published in peer-reviewed outlets. Each chapter corresponds to one paper."
+  )
+  root <- make_mock_project(
+    thesis_format = "journal",
+    partials = list("rationale.tex" = c(substantive))
+  )
+  rule <- get_rule("journal-rationale-present")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+# 5.E.2 — journal-contribution-stmts
+
+test_that("journal-contribution-stmts returns NULL when no body chapters exist", {
+  # Only index.qmd in chapters — no body chapter files
+  root <- make_mock_project(thesis_format = "journal")
+  rule <- get_rule("journal-contribution-stmts")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("journal-contribution-stmts fires when a body chapter has no contribution marker", {
+  root <- make_mock_project(
+    thesis_format = "journal",
+    chapters = c("index.qmd", "01-paper.qmd"),
+    qmd_files = list(
+      "01-paper.qmd" = c("---", "title: Paper One", "---", "No contribution marker here.")
+    )
+  )
+  rule <- get_rule("journal-contribution-stmts")
+  ctx  <- build_ctx(root)
+  result <- rule$check(ctx)
+  expect_false(is.null(result))
+  expect_equal(result$rule_id, "journal-contribution-stmts")
+  expect_equal(result$severity, "warning")
+  expect_match(result$message, "01-paper.qmd")
+})
+
+test_that("journal-contribution-stmts passes when body chapter has chunk-option contribution marker", {
+  root <- make_mock_project(
+    thesis_format = "journal",
+    chapters = c("index.qmd", "01-paper.qmd"),
+    qmd_files = list(
+      "01-paper.qmd" = c(
+        "---", "title: Paper One", "---",
+        "```{r}",
+        "#| contribution: \"I wrote 80% of this paper.\"",
+        "1 + 1",
+        "```"
+      )
+    )
+  )
+  rule <- get_rule("journal-contribution-stmts")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("journal-contribution-stmts passes when body chapter has heading-attribute contribution marker", {
+  root <- make_mock_project(
+    thesis_format = "journal",
+    chapters = c("index.qmd", "01-paper.qmd"),
+    qmd_files = list(
+      "01-paper.qmd" = c(
+        "---", "title: Paper One", "---",
+        "# Paper Title {contribution=\"Lead author, experimental design and analysis.\"}"
+      )
+    )
+  )
+  rule <- get_rule("journal-contribution-stmts")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("journal-contribution-stmts passes when body chapter has YAML contribution key", {
+  root <- make_mock_project(
+    thesis_format = "journal",
+    chapters = c("index.qmd", "01-paper.qmd"),
+    qmd_files = list(
+      "01-paper.qmd" = c(
+        "---",
+        "title: Paper One",
+        "contribution: \"I conducted all experiments and wrote the manuscript.\"",
+        "---",
+        "Body text."
+      )
+    )
+  )
+  rule <- get_rule("journal-contribution-stmts")
   ctx  <- build_ctx(root)
   expect_null(rule$check(ctx))
 })
