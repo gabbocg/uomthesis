@@ -30,6 +30,7 @@ Imports:
     withr,
     yaml
 Suggests:
+    jsonlite,
     knitr,
     pdftools,
     quarto,

@@ -3,6 +3,7 @@
 S3method(print,uomthesis_metadata_check)
 S3method(print,uomthesis_policy_info)
 S3method(print,uomthesis_word_count)
+export(check_thesis)
 export(copy_csl)
 export(list_csl)
 export(policy_info)
