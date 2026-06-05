@@ -15,7 +15,7 @@ Description: Provides a Quarto template (standard and journal formats), a
     in the Faculty of Humanities at the University of Manchester. Encodes
     the requirements of the University's Presentation of Theses Policy.
 License: MIT + file LICENSE
-URL: https://github.com/gabriel-cabrera-guz/uomthesis
+URL: https://github.com/gabriel-cabrera-guz/uomthesis, https://gabriel-cabrera-guz.github.io/uomthesis
 BugReports: https://github.com/gabriel-cabrera-guz/uomthesis/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
