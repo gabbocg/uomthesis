@@ -1,0 +1,6 @@
+# Introduction
+
+<!-- TODO: Write the introduction. State the research question, motivate the study,
+and outline the structure of the thesis. -->
+
+This chapter introduces the research question and motivates the study.
