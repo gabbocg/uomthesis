@@ -8,11 +8,13 @@ book:
     - index.qmd
     - chapters/00-abstract.qmd
     - chapters/00-acknowledgements.qmd
-    - chapters/01-introduction.qmd
-    - chapters/02-paper-one.qmd
-    - chapters/03-paper-two.qmd
-    - chapters/04-paper-three.qmd
-    - chapters/05-discussion.qmd
+    - part: "Main body"
+      chapters:
+        - chapters/01-introduction.qmd
+        - chapters/02-paper-one.qmd
+        - chapters/03-paper-two.qmd
+        - chapters/04-paper-three.qmd
+        - chapters/05-discussion.qmd
   appendices:
     - chapters/appendix-a.qmd
 

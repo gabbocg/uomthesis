@@ -24,12 +24,7 @@ contributes:
       template: template.tex
       include-in-header:
         - partials/header.tex
-      include-before-body:
-        - partials/title-page.tex
-        - partials/declaration.tex
-        - partials/copyright.tex
-        - partials/ai-disclosure.tex
-      cite-method: biblatex
+      cite-method: citeproc
     html:
       theme: theme/uomthesis.scss
       toc: true

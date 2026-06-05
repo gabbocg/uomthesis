@@ -1,5 +1,6 @@
 ---
-title: "{{title}}"
+title: "Preface"
+unnumbered: true
 
 uomthesis:
   candidate:
@@ -41,8 +42,13 @@ uomthesis:
 
   covid_impact_statement: null
 
+  journal:
+    rationale: null
+
 mainfont: "{{mainfont}}"
 linestretch: 1.5
 pdf-engine: {{engine}}
 lang: en-GB
 ---
+
+This page exists only to hold project metadata for Quarto.

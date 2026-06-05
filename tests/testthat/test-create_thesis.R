@@ -18,7 +18,7 @@ test_that("create_thesis scaffolds a standard project with required files", {
                                     "harvard-manchester.csl")))
 })
 
-test_that("create_thesis substitutes placeholders in index.qmd", {
+test_that("create_thesis substitutes placeholders in scaffolded files", {
   tmp <- withr::local_tempdir()
   out <- create_thesis(
     path = file.path(tmp, "thesis"),
@@ -29,11 +29,15 @@ test_that("create_thesis substitutes placeholders in index.qmd", {
     year = 2028,
     open = FALSE
   )
+  # Author and year metadata are substituted into index.qmd
   idx <- readLines(file.path(out, "index.qmd"))
-  expect_false(any(grepl("\\{\\{title\\}\\}", idx)))
-  expect_true(any(grepl("On the foo", idx)))
+  expect_false(any(grepl("\\{\\{[a-z_]+\\}\\}", idx)))
   expect_true(any(grepl("Carter", idx)))
   expect_true(any(grepl("2028", idx)))
+  # The thesis title is substituted into _quarto.yml's book.title
+  qy <- readLines(file.path(out, "_quarto.yml"))
+  expect_false(any(grepl("\\{\\{[a-z_]+\\}\\}", qy)))
+  expect_true(any(grepl("On the foo", qy)))
 })
 
 test_that("create_thesis rejects an out-of-set font", {
