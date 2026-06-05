@@ -1,0 +1,8 @@
+# Introduction
+
+<!-- TODO: Set the context, state the overall research question, and preview
+how the constituent papers relate to each other.
+
+Per Presentation of Theses Policy section 13.10 and the Journal-format guidance,
+this introduction should provide the rationale for journal-format submission and
+an account of how the thesis has been constructed. -->

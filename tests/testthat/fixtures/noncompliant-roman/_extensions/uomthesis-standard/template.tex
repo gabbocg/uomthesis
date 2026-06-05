@@ -1,0 +1,67 @@
+\documentclass[$if(fontsize)$$fontsize$,$endif$a4paper]{report}
+
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{fontspec}
+$if(mainfont)$
+  \setmainfont{$mainfont$}
+$endif$
+\else
+  % pdfLaTeX fallback: only Times New Roman is policy-safe here
+  \usepackage{mathptmx}
+\fi
+
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$else$
+\usepackage[left=40mm,right=15mm,top=20mm,bottom=20mm]{geometry}
+$endif$
+
+\usepackage{setspace}
+$if(linestretch)$\setstretch{$linestretch$}$endif$
+
+% Policy §7.4: single Arabic sequence, no Romans, starting at title page
+\usepackage{fancyhdr}
+\pagenumbering{arabic}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Policy §7.7: blank pages must say "Blank page"
+\newcommand{\blankpage}{\clearpage\thispagestyle{empty}\null\vfill
+  \centerline{Blank page}\vfill\clearpage}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+\begin{document}
+
+$for(include-before)$
+$include-before$
+$endfor$
+
+$if(toc)$
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+$endif$
+
+$if(lof)$\listoffigures$endif$
+$if(lot)$\listoftables$endif$
+
+$body$
+
+$for(include-after)$
+$include-after$
+$endfor$
+
+\end{document}

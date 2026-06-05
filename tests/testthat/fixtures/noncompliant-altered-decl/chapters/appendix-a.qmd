@@ -1,0 +1,4 @@
+# Appendix A
+
+<!-- TODO: Supplementary material. Appendices do not count toward the main-text
+word limit. -->

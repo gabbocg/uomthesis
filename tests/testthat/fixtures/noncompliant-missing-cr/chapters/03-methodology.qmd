@@ -1,0 +1,4 @@
+# Methodology
+
+<!-- TODO: Describe and justify your methodological choices. Be specific enough
+that a reader could replicate the study. -->

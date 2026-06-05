@@ -1,0 +1,5 @@
+# Abstract
+
+<!-- Write your abstract here. Policy section 8.1.e mandates a single-page abstract. -->
+
+Your abstract should give a concise summary of the research problem, the methods used, the principal findings, and the contribution to knowledge. Aim for under ~350 words so that the rendered abstract fits on one A4 page at 12pt with 1.5 line spacing.

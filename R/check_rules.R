@@ -704,7 +704,8 @@ rule_journal_contribution_stmts <- function() list(
   check      = function(ctx) {
     body_files <- vapply(ctx$qmd_files,
                          function(f) f$role == "body" &&
-                                     !grepl("(^|/)index\\.qmd$", f$path),
+                                     !grepl("(^|/)index\\.qmd$", f$path) &&
+                                     grepl("paper", basename(f$path), ignore.case = TRUE),
                          logical(1))
     body_files <- names(ctx$qmd_files)[body_files]
     if (length(body_files) == 0) return(NULL)
