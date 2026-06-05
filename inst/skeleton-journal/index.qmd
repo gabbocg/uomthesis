@@ -1,0 +1,48 @@
+---
+title: "{{title}}"
+
+uomthesis:
+  candidate:
+    forename: "{{forename}}"
+    middle_initial: "{{middle_initial}}"
+    surname: "{{surname}}"
+    native_name: "{{native_name}}"
+
+  degree: "{{degree}}"
+  faculty: "{{faculty}}"
+  school: "{{school}}"
+  division: "{{division}}"
+  year: {{year}}
+
+  thesis_format: "{{thesis_format}}"
+
+  declaration:
+    variant: "either"
+    joint_authorship_details: null
+
+  ai_disclosure:
+    include: false
+    tools: []
+    description: null
+
+  content_notification:
+    include: false
+    summary: null
+
+  optional_prelims:
+    lay_abstract: false
+    dedication: null
+    acknowledgements: true
+    preface: false
+
+  resubmission:
+    is_resubmission: false
+    revisions_file: null
+
+  covid_impact_statement: null
+
+mainfont: "{{mainfont}}"
+linestretch: 1.5
+pdf-engine: {{engine}}
+lang: en-GB
+---
