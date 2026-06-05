@@ -1,0 +1,56 @@
+name: render-example-thesis
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions: read-all
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Install TinyTeX
+        run: quarto install tinytex --no-prompt
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::devtools, any::pdftools, any::quarto, local::.
+          needs: check
+
+      - name: Render compliant-standard fixture
+        run: |
+          cd tests/testthat/fixtures/compliant-standard
+          quarto render --to uomthesis-standard-pdf
+
+      - name: Run source-phase compliance check on the rendered project
+        shell: Rscript {0}
+        run: |
+          library(uomthesis)
+          res <- check_thesis(
+            project = "tests/testthat/fixtures/compliant-standard",
+            fail_on = "error"
+          )
+          stopifnot(res$ok)
+          cat("All", res$n_rules, "rules passed.\n")
+
+      - name: Upload rendered PDF artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: example-thesis-pdf
+          path: tests/testthat/fixtures/compliant-standard/_book/*.pdf
+          if-no-files-found: warn
