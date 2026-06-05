@@ -1,0 +1,115 @@
+---
+title: "Citation styles"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Citation styles}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+```
+
+## Which styles are bundled
+
+`uomthesis` ships five CSL (Citation Style Language) files that cover the most common citation styles used in AMBS research. View them with `list_csl()`:
+
+```{r list-csl}
+library(uomthesis)
+list_csl()
+```
+
+Each style is identified by a short `name` used in `create_thesis()` and `copy_csl()`. The `sha256` column records the hash of the CSL file at retrieval time so that reproducibility can be verified: if the upstream file changes, the hash will differ.
+
+The bundled styles are:
+
+| Name | Full style name | Common in |
+|---|---|---|
+| `harvard-manchester` | Harvard (Cite Them Right) | Business, social sciences |
+| `apa` | APA 7th edition | Psychology, education |
+| `chicago-author-date` | Chicago author-date | History, humanities |
+| `mhra` | MHRA footnotes | Humanities, languages |
+| `vancouver` | Vancouver (Elsevier variant) | Medicine, life sciences |
+
+Policy section 7.2 requires citations to be in a consistent, recognised style throughout the thesis. Any of the five bundled styles satisfies this requirement.
+
+## Picking one at scaffold time
+
+Pass `reference_style` to `create_thesis()`:
+
+```{r scaffold-style, eval = FALSE}
+create_thesis(
+  "my-thesis",
+  degree          = "PhD",
+  author          = list(forename = "Jane", surname = "Doe"),
+  title           = "An analysis of something",
+  year            = 2027,
+  division        = "MSM",
+  reference_style = "apa"
+)
+```
+
+The scaffolder copies `apa.csl` into the extension's `csl/` subdirectory and sets `csl: _extensions/uomthesis-standard/csl/apa.csl` in `_quarto.yml`.
+
+If `reference_style` is omitted the default is `harvard-manchester`.
+
+## Switching styles after scaffolding
+
+To change the citation style in an existing project:
+
+**Step 1.** Copy the new CSL into your extension directory:
+
+```{r copy-csl, eval = FALSE}
+copy_csl("apa", to = "_extensions/uomthesis-standard/csl/")
+```
+
+**Step 2.** Update the `csl:` line in `_quarto.yml`:
+
+```yaml
+bibliography: references.bib
+csl: _extensions/uomthesis-standard/csl/apa.csl
+```
+
+**Step 3.** Re-render:
+
+```{r re-render, eval = FALSE}
+quarto::quarto_render()
+```
+
+For a journal-format project, replace `uomthesis-standard` with `uomthesis-journal` in the path.
+
+## Bringing your own CSL
+
+You are not restricted to the five bundled styles. If your supervisor requires a specific style, or if your target journal has a custom CSL:
+
+1. Download the CSL file (e.g., from <https://citationstyles.org/> or the CSL repository at <https://github.com/citation-style-language/styles>).
+2. Save it anywhere inside your project (e.g., `_extensions/uomthesis-standard/csl/my-style.csl`).
+3. Point `csl:` in `_quarto.yml` at the file path:
+
+```yaml
+csl: _extensions/uomthesis-standard/csl/my-style.csl
+```
+
+The `csl-bundled-or-path-exists` validator rule accepts any path that resolves to an existing file, so your custom CSL will pass validation as long as it is present on disk.
+
+## How bundled styles are pinned
+
+The file `inst/csl/SOURCES.yml` records the provenance of each bundled CSL:
+
+```yaml
+- name: harvard-manchester
+  url: https://raw.githubusercontent.com/.../harvard-cite-them-right.csl
+  retrieved: '2026-06-02'
+  sha256: 0ca3d2c7...
+```
+
+When a new version of the package is built, `dev/sync_shared.R` re-downloads each file, verifies the sha256, and updates `SOURCES.yml` if the upstream file has changed. This means you can always tell exactly which version of a CSL style your thesis used and reproduce it from the hash. The `list_csl()` function surfaces this information directly:
+
+```{r sources, eval = FALSE}
+# View provenance of all bundled styles
+list_csl()[, c("name", "retrieved", "sha256")]
+```
