@@ -1,0 +1,39 @@
+url: https://gabriel-cabrera-guz.github.io/uomthesis
+destination: site
+template:
+  bootstrap: 5
+
+home:
+  title: uomthesis
+  description: Quarto template and compliance tools for AMBS PhD theses at The University of Manchester.
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [github]
+
+articles:
+  - title: Articles
+    navbar: ~
+    contents:
+      - getting-started
+      - journal-format
+      - compliance
+      - citation-styles
+
+reference:
+  - title: Scaffolding
+    contents:
+      - create_thesis
+  - title: Word count
+    contents:
+      - word_count
+  - title: Compliance
+    contents:
+      - check_thesis
+      - validate_metadata
+  - title: Helpers
+    contents:
+      - policy_info
+      - list_csl
+      - copy_csl
