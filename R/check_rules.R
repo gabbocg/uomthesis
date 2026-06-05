@@ -395,6 +395,13 @@ rule_title_page_statement <- function() list(
     )
     body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
     if (whitespace_contains(body, reference)) return(NULL)
+    # Also accept the unrendered scaffold form with Pandoc template variables
+    pandoc_reference <- glue::glue(
+      ctx$policy$title_page_statement,
+      degree  = "$uomthesis.degree$",
+      faculty = "$uomthesis.faculty$"
+    )
+    if (whitespace_contains(body, pandoc_reference)) return(NULL)
     list(
       rule_id    = "title-page-statement",
       severity   = "error",
@@ -484,6 +491,10 @@ rule_copyright_author_match <- function() list(
     cand <- ctx$metadata$candidate
     if (is.null(cand) || is.null(cand$forename) || is.null(cand$surname)) return(NULL)
     body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
+    # Accept literal candidate name OR Pandoc template variables (unrendered scaffold)
+    uses_pandoc_vars <- grepl("$uomthesis.candidate.forename$", body, fixed = TRUE) &&
+                        grepl("$uomthesis.candidate.surname$",  body, fixed = TRUE)
+    if (uses_pandoc_vars) return(NULL)
     has_forename <- grepl(cand$forename, body, fixed = TRUE)
     has_surname  <- grepl(cand$surname,  body, fixed = TRUE)
     if (has_forename && has_surname) return(NULL)
