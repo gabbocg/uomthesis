@@ -6,7 +6,7 @@
 #'
 #' @param project Path to project root (containing _quarto.yml).
 #' @param rendered_pdf Optional path to a rendered PDF. **Not yet implemented**
-#'   in v0.1 — supplying a value emits a warning and falls back to source-based
+#'   in v0.1 -- supplying a value emits a warning and falls back to source-based
 #'   counting. Will be honored in v0.2.
 #' @param warn_at Fraction of cap at which a warning is printed (default 0.9).
 #' @param error_at Optional fraction of cap at which an error is raised.

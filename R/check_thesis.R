@@ -5,7 +5,7 @@
 #'
 #' @param project Path to project root.
 #' @param rendered_pdf Optional path to a rendered PDF. **Not yet implemented**
-#'   in v0.1 — supplying a value emits a warning and only source-phase rules run.
+#'   in v0.1 -- supplying a value emits a warning and only source-phase rules run.
 #'   Will be honored in v0.2.
 #' @param rules Optional character vector of rule IDs to restrict the run.
 #' @param format Output format: console, markdown, or json.

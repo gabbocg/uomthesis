@@ -10,7 +10,7 @@ word_count(project = ".", rendered_pdf = NULL, warn_at = 0.9, error_at = NULL)
 \item{project}{Path to project root (containing _quarto.yml).}
 
 \item{rendered_pdf}{Optional path to a rendered PDF. \strong{Not yet implemented}
-in v0.1 — supplying a value emits a warning and falls back to source-based
+in v0.1 -- supplying a value emits a warning and falls back to source-based
 counting. Will be honored in v0.2.}
 
 \item{warn_at}{Fraction of cap at which a warning is printed (default 0.9).}

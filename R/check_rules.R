@@ -507,7 +507,7 @@ rule_copyright_author_match <- function() list(
 #' @keywords internal
 rule_prelim_order <- function() list(
   id         = "prelim-order",
-  policy_ref = "\\u00a78.1",
+  policy_ref = "\u00a78.1",
   phase      = "source",
   formats    = c("standard", "journal"),
   severity   = "error",
@@ -528,16 +528,16 @@ rule_prelim_order <- function() list(
         rule_id    = "prelim-order",
         severity   = "error",
         message    = cli::format_inline(
-          "Chapter ordering violates \\u00a78.1: {.path {chapters[bad_idx]}} ({roles[bad_idx]}) appears after a later-role chapter."
+          "Chapter ordering violates \u00a78.1: {.path {chapters[bad_idx]}} ({roles[bad_idx]}) appears after a later-role chapter."
         ),
         location   = list(file = "_quarto.yml"),
-        policy_ref = "\\u00a78.1",
+        policy_ref = "\u00a78.1",
         hint       = "Reorder _quarto.yml book.chapters so all 00-prelim files come before 01-body files, and appendices come last (use 'appendices' for appendix files)."
       ))
     }
     NULL
   },
-  rationale  = "Policy \\u00a78.1 mandates a specific order of preliminary pages, then main body, then appendices."
+  rationale  = "Policy \u00a78.1 mandates a specific order of preliminary pages, then main body, then appendices."
 )
 
 #' Rule: abstract source must be short enough to fit on one rendered page
@@ -545,7 +545,7 @@ rule_prelim_order <- function() list(
 #' @keywords internal
 rule_abstract_one_page <- function() list(
   id         = "abstract-one-page",
-  policy_ref = "\\u00a78.1.e",
+  policy_ref = "\u00a78.1.e",
   phase      = "source",
   formats    = c("standard", "journal"),
   severity   = "warning",
@@ -562,14 +562,14 @@ rule_abstract_one_page <- function() list(
       rule_id    = "abstract-one-page",
       severity   = "warning",
       message    = cli::format_inline(
-        "abstract source is {.val {wc}} words; the rendered page may exceed one page (policy \\u00a78.1.e)."
+        "abstract source is {.val {wc}} words; the rendered page may exceed one page (policy \u00a78.1.e)."
       ),
       location   = list(file = f),
-      policy_ref = "\\u00a78.1.e",
+      policy_ref = "\u00a78.1.e",
       hint       = "Tighten the abstract to under ~350 words for A4 / 12pt / 1.5 spacing."
     )
   },
-  rationale  = "Policy \\u00a78.1.e mandates that the abstract not exceed one page. The source-phase check is a heuristic; the PDF-phase rule (v0.2) confirms the rendered page count."
+  rationale  = "Policy \u00a78.1.e mandates that the abstract not exceed one page. The source-phase check is a heuristic; the PDF-phase rule (v0.2) confirms the rendered page count."
 )
 
 #' Rule: csl setting must be a bundled style or an existing file path
@@ -577,7 +577,7 @@ rule_abstract_one_page <- function() list(
 #' @keywords internal
 rule_csl_bundled_or_path_exists <- function() list(
   id         = "csl-bundled-or-path-exists",
-  policy_ref = "\\u00a77.2",
+  policy_ref = "\u00a77.2",
   phase      = "source",
   formats    = c("standard", "journal"),
   severity   = "error",
@@ -597,12 +597,12 @@ rule_csl_bundled_or_path_exists <- function() list(
       severity   = "error",
       message    = cli::format_inline("csl {.val {csl}} is not a bundled style and the file does not exist."),
       location   = list(file = "_quarto.yml"),
-      policy_ref = "\\u00a77.2",
+      policy_ref = "\u00a77.2",
       hint       = paste0("Use one of the bundled styles (", paste(bundled, collapse = ", "),
                           ") or check the path.")
     )
   },
-  rationale  = "Policy \\u00a77.2 lets the candidate pick a citation style but it must be consistently applied; an unresolvable csl: setting means citations will silently fall back to Pandoc default."
+  rationale  = "Policy \u00a77.2 lets the candidate pick a citation style but it must be consistently applied; an unresolvable csl: setting means citations will silently fall back to Pandoc default."
 )
 
 #' Rule: every bibliography file listed must exist on disk
@@ -610,7 +610,7 @@ rule_csl_bundled_or_path_exists <- function() list(
 #' @keywords internal
 rule_bibliography_exists <- function() list(
   id         = "bibliography-exists",
-  policy_ref = "\\u00a77.2",
+  policy_ref = "\u00a77.2",
   phase      = "source",
   formats    = c("standard", "journal"),
   severity   = "error",
@@ -627,7 +627,7 @@ rule_bibliography_exists <- function() list(
         severity   = "error",
         message    = cli::format_inline("bibliography file {.path {b}} does not exist."),
         location   = list(file = "_quarto.yml"),
-        policy_ref = "\\u00a77.2",
+        policy_ref = "\u00a77.2",
         hint       = paste0("Create the file or remove it from bibliography:")
       )))
     }

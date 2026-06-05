@@ -16,7 +16,7 @@ check_thesis(
 \item{project}{Path to project root.}
 
 \item{rendered_pdf}{Optional path to a rendered PDF. \strong{Not yet implemented}
-in v0.1 — supplying a value emits a warning and only source-phase rules run.
+in v0.1 -- supplying a value emits a warning and only source-phase rules run.
 Will be honored in v0.2.}
 
 \item{rules}{Optional character vector of rule IDs to restrict the run.}
