@@ -30,10 +30,14 @@ jobs:
           )
           covr::to_cobertura(cov)
         shell: Rscript {0}
-      - uses: codecov/codecov-action@v4
+      - uses: codecov/codecov-action@v5
         with:
-          fail_ci_if_error: ${{ github.event_name != 'pull_request' && true || false }}
-          file: ./cobertura.xml
+          # Codecov requires a token for uploads from protected branches.
+          # While CODECOV_TOKEN is unset in repo secrets, swallow upload
+          # failures so coverage doesn't break the rest of CI -- the
+          # coverage report is still generated and visible in the run log.
+          fail_ci_if_error: false
+          files: ./cobertura.xml
           plugin: noop
           disable_search: true
           token: ${{ secrets.CODECOV_TOKEN }}
