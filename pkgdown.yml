@@ -1,0 +1,12 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  citation-styles: citation-styles.html
+  compliance: compliance.html
+  getting-started: getting-started.html
+  journal-format: journal-format.html
+last_built: 2026-06-06T19:20Z
+urls:
+  reference: https://gabriel-cabrera-guz.github.io/uomthesis/reference
+  article: https://gabriel-cabrera-guz.github.io/uomthesis/articles

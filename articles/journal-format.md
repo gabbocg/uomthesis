@@ -1,0 +1,143 @@
+# Journal-format theses
+
+## When journal format applies
+
+Policy section 13 permits PhD candidates to submit a thesis as a
+collection of papers rather than a conventional monograph. The *Journal
+Format Theses Guiding Principles* (The University of Manchester) apply.
+Key points:
+
+- The thesis must still be a coherent, unified piece of work with an
+  overarching argument.
+- There is no minimum or maximum number of papers, but the overall word
+  count cap is **90,000 words** for a PhD journal-format thesis (versus
+  80,000 for standard format).
+- Papers may be published, submitted, or in preparation. Published or
+  submitted papers do not need to be reformatted to match the body font,
+  but must be incorporated as chapters.
+- Each paper chapter must carry an explicit statement of the candidate’s
+  contribution (policy section 13.3).
+- A dedicated **rationale chapter** is mandatory (policy section 13.10).
+
+Approval to use journal format must be obtained from the School before
+the thesis is submitted. Contact the Doctoral Academy for the approval
+form.
+
+## Scaffolding a journal project
+
+Pass `format = "journal"` to
+[`create_thesis()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/create_thesis.md):
+
+``` r
+
+library(uomthesis)
+
+create_thesis(
+  "my-journal-thesis",
+  degree  = "PhD",
+  author  = list(forename       = "Jane",
+                 middle_initial = "Q",
+                 surname        = "Doe"),
+  title   = "Three papers on important things",
+  year    = 2027,
+  division = "MSM",
+  format  = "journal"
+)
+```
+
+The scaffolded project includes:
+
+- `chapters/00-rationale.qmd` – the mandatory rationale chapter
+  (pre-populated with section headings).
+- `chapters/01-paper-one.qmd`, `chapters/02-paper-two.qmd` – starter
+  paper chapters with contribution declaration attributes.
+- `_extensions/uomthesis-journal/` – the journal-format Quarto
+  extension.
+
+## The rationale chapter
+
+Policy section 13.10 mandates a rationale chapter that:
+
+1.  Explains why the journal format is appropriate for this thesis.
+2.  Describes how the papers relate to each other and to the overarching
+    argument.
+3.  States the role of each paper in the thesis structure.
+
+The scaffolded `00-rationale.qmd` contains placeholder headings for each
+of these points. Fill them in before you write anything else – they will
+anchor your writing throughout.
+
+The validator rule `journal-rationale-present` checks that a file whose
+name contains `rationale` (case-insensitive) exists among the book
+chapters. If you rename the file, update `_quarto.yml` accordingly.
+
+## Per-chapter contribution declarations
+
+Policy section 13.3 requires that each paper chapter contains an
+explicit statement of the candidate’s individual contribution. In
+`uomthesis`, the journal extension reads a `contribution` attribute on
+the chapter’s top-level heading.
+
+In your `.qmd` file, add the attribute to the `#` heading:
+
+``` markdown
+# Paper title {contribution="Lead author. Conceived and conducted all analyses, wrote the first draft. Co-author X provided comments on three manuscript revisions."}
+```
+
+The extension renders this into a formatted contribution box at the
+start of the chapter. The text should be specific: name each co-author,
+describe their role, and state clearly what the candidate did
+independently.
+
+The validator rule `journal-contribution-stmts` checks for the presence
+of a `contribution` attribute (or equivalent YAML key) in each file
+whose name contains `paper` (case-insensitive). If a file is missing the
+attribute it is reported as a warning.
+
+## Word cap
+
+For a PhD journal-format thesis the cap is **90,000 words** of main
+text. The same exclusions apply as for standard format (preliminary
+pages, bibliography, appendices, footnotes).
+
+``` r
+
+# Run from within the thesis project:
+word_count()
+```
+
+[`word_count()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/word_count.md)
+reads the thesis format from your `uomthesis:` YAML block and applies
+the correct cap automatically.
+
+## Validator differences
+
+When your `uomthesis.thesis_format` is set to `"journal"`,
+[`check_thesis()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/check_thesis.md)
+runs two additional rules:
+
+| Rule ID | Policy section | What it checks |
+|----|----|----|
+| `journal-rationale-present` | 13.10 | A chapter file named `*rationale*` exists in `_quarto.yml` |
+| `journal-contribution-stmts` | 13.3 | Each `*paper*` chapter carries a `contribution` attribute |
+
+Both rules are skipped entirely for standard-format theses.
+
+Run the validator with:
+
+``` r
+
+check_thesis()
+```
+
+If you want to run only the journal-specific rules:
+
+``` r
+
+check_thesis(".", rules = c("journal-rationale-present",
+                             "journal-contribution-stmts"))
+```
+
+See
+[`vignette("compliance")`](https://gabriel-cabrera-guz.github.io/uomthesis/articles/compliance.md)
+for the complete rule list and output format options.
