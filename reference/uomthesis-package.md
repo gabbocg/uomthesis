@@ -10,12 +10,11 @@ of the University's Presentation of Theses Policy.
 
 Useful links:
 
-- <https://github.com/gabriel-cabrera-guz/uomthesis>
+- <https://github.com/gabbocg/uomthesis>
 
-- <https://gabriel-cabrera-guz.github.io/uomthesis>
+- <https://gabbocg.github.io/uomthesis>
 
-- Report bugs at
-  <https://github.com/gabriel-cabrera-guz/uomthesis/issues>
+- Report bugs at <https://github.com/gabbocg/uomthesis/issues>
 
 ## Author
 
