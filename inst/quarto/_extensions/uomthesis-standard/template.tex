@@ -48,8 +48,12 @@ $if(linestretch)$\setstretch{$linestretch$}$endif$
 }
 %% Equation refs (\eqref, Quarto's @eq-...) flip to their own colour
 %% inside a group so other internal refs keep the linkcolor above.
-\let\OldEqref\eqref
-\renewcommand{\eqref}[1]{\begingroup\hypersetup{linkcolor=$if(uomthesis.hyperlink.equation)$$uomthesis.hyperlink.equation$$else$red$endif$}\OldEqref{#1}\endgroup}
+%% Deferred to \AtBeginDocument because \eqref is provided by amsmath,
+%% which is loaded later in this template.
+\AtBeginDocument{%
+  \let\OldEqref\eqref
+  \renewcommand{\eqref}[1]{\begingroup\hypersetup{linkcolor=$if(uomthesis.hyperlink.equation)$$uomthesis.hyperlink.equation$$else$red$endif$}\OldEqref{#1}\endgroup}%
+}
 
 % Maths
 \usepackage{amsmath}
