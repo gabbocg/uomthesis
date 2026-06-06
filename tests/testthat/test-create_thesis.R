@@ -128,3 +128,67 @@ test_that("create_thesis-scaffolded project passes check_thesis()", {
   expect_true(res$ok)
   expect_length(res$findings, 0)
 })
+
+test_that("create_thesis num_papers shrinks the journal skeleton", {
+  tmp <- withr::local_tempdir()
+  out <- create_thesis(
+    path = file.path(tmp, "thesis-n2"),
+    format = "journal",
+    author = list(forename = "Jane", surname = "Doe"),
+    title = "Two papers",
+    year = 2027,
+    num_papers = 2L,
+    open = FALSE
+  )
+  chap <- list.files(file.path(out, "chapters"), pattern = "\\.qmd$")
+  expect_true("02-paper-one.qmd" %in% chap)
+  expect_true("03-paper-two.qmd" %in% chap)
+  expect_false("04-paper-three.qmd" %in% chap)
+  expect_true("04-conclusion.qmd" %in% chap)
+  qy <- readLines(file.path(out, "_quarto.yml"))
+  expect_true(any(grepl("04-conclusion.qmd", qy)))
+  expect_false(any(grepl("paper-three.qmd", qy)))
+})
+
+test_that("create_thesis num_papers grows the journal skeleton", {
+  tmp <- withr::local_tempdir()
+  out <- create_thesis(
+    path = file.path(tmp, "thesis-n5"),
+    format = "journal",
+    author = list(forename = "Jane", surname = "Doe"),
+    title = "Five papers",
+    year = 2027,
+    num_papers = 5L,
+    open = FALSE
+  )
+  chap <- list.files(file.path(out, "chapters"), pattern = "\\.qmd$")
+  expect_true(all(c("05-paper-four.qmd", "06-paper-five.qmd",
+                    "07-conclusion.qmd") %in% chap))
+  # Paper 1 (the rich demo) is preserved verbatim
+  p1 <- readLines(file.path(out, "chapters", "02-paper-one.qmd"))
+  expect_true(any(grepl("Title of the first paper", p1)))
+  # New papers use ordinal adjectives in titles
+  p4 <- readLines(file.path(out, "chapters", "05-paper-four.qmd"))
+  expect_true(any(grepl("Title of the fourth paper", p4)))
+  # New papers carry letter-prefixed appendix headings keyed to chapter number
+  expect_true(any(grepl("5\\.A", p4)))
+})
+
+test_that("create_thesis rejects out-of-range num_papers", {
+  tmp <- withr::local_tempdir()
+  expect_error(
+    create_thesis(file.path(tmp, "bad-zero"), format = "journal",
+                  num_papers = 0L, open = FALSE),
+    class = "uomthesis_invalid_num_papers"
+  )
+  expect_error(
+    create_thesis(file.path(tmp, "bad-big"), format = "journal",
+                  num_papers = 11L, open = FALSE),
+    class = "uomthesis_invalid_num_papers"
+  )
+  expect_error(
+    create_thesis(file.path(tmp, "bad-frac"), format = "journal",
+                  num_papers = 2.5, open = FALSE),
+    class = "uomthesis_invalid_num_papers"
+  )
+})

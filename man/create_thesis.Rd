@@ -19,6 +19,7 @@ create_thesis(
   engine = c("lualatex", "xelatex", "pdflatex"),
   mainfont = "Times New Roman",
   list_of_publications = NULL,
+  num_papers = 3L,
   force = FALSE,
   open = rlang::is_interactive()
 )
@@ -54,6 +55,15 @@ journal), a \code{chapters/00-publications.qmd} page is scaffolded and listed
 in \verb{_quarto.yml}. Set to \code{FALSE} if you have no papers to list yet --
 the page is omitted from both the directory and the book chapters. Has
 no effect for \code{format = "standard"}.}
+
+\item{num_papers}{For journal format: integer 1-10, the number of
+constituent paper chapters to scaffold (Introduction + N papers +
+Conclusion). Default \code{3} (the typical AMBS journal-format thesis size
+per policy section 13.5). Paper 1 is always the rich example chapter
+that demonstrates citations, equations, tables, figures, and per-paper
+appendices; Papers 2..N are bare structural templates with letter-
+prefixed appendix headings (N.A, N.B). Has no effect for
+\code{format = "standard"}.}
 
 \item{force}{If \code{TRUE}, allow \code{path} to exist as long as it is empty.}
 
