@@ -221,12 +221,11 @@ site](https://gabbocg.github.io/uomthesis/).
 
 If you encounter a bug, please file an issue with a minimal reproducible
 example on [GitHub](https://github.com/gabbocg/uomthesis/issues). For
-questions, email <gabriel.cabrera.guz@gmail.com>.
+questions, email <gabriel.cabreraguzman@postgrad.manchester.ac.uk>.
 
 ## References
 
 - The University of Manchester. *Presentation of Theses Policy*. Version
   12, March 2026.
-  <https://documents.manchester.ac.uk/display.aspx?DocID=7420>.
 - The University of Manchester. *Journal Format Theses: Guiding
   Principles*. Faculty of Humanities.
