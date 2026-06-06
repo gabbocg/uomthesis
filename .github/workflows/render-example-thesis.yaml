@@ -26,6 +26,20 @@ jobs:
       - name: Install TinyTeX
         run: quarto install tinytex --no-prompt
 
+      - name: Install Microsoft core fonts (Times New Roman, Arial, ...)
+        # The Presentation of Theses Policy approves a small set of
+        # typefaces (Times New Roman, Arial, Verdana, Tahoma, Trebuchet,
+        # Calibri, Palatino, Garamond). The runner has none of them out
+        # of the box. ttf-mscorefonts-installer pulls them in from
+        # SourceForge; pre-accepting the EULA via debconf-set-selections
+        # keeps the install non-interactive.
+        run: |
+          sudo apt-get update
+          echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" \
+            | sudo debconf-set-selections
+          sudo apt-get install -y --no-install-recommends ttf-mscorefonts-installer
+          sudo fc-cache -fv
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::devtools, any::pdftools, any::quarto, local::.
