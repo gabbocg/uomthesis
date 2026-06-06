@@ -63,4 +63,35 @@ body <- readLines(idx)
 body <- sub("linestretch: 1.5", "linestretch: 1.0", body)
 writeLines(body, idx)
 
+
+# ---------------------------------------------------------------------------
+# Post-process every fixture to reduce its on-disk path footprint:
+#
+#   * Rewrite each fixture's _quarto.yml so `csl:` references the bundled
+#     style name ("harvard-manchester") instead of the long
+#     "_extensions/uomthesis-<fmt>/csl/harvard-manchester.csl" path.
+#   * Delete the actual CSL file from the fixture's _extensions dir, since
+#     no rule reads the CSL content (rule csl-bundled-or-path-exists
+#     short-circuits when the csl value is a bundled name).
+#
+# Together these drop the longest path in the package source tree under
+# the 100-byte tarball-portability threshold, which R CMD check checks
+# under the "non-portable file paths" NOTE.
+shorten_csl_path <- function(fix_dir) {
+  qy_path <- file.path(fix_dir, "_quarto.yml")
+  if (file.exists(qy_path)) {
+    qy <- readLines(qy_path, warn = FALSE)
+    qy <- sub("^csl: .*harvard-manchester\\.csl\\s*$",
+              "csl: harvard-manchester", qy)
+    writeLines(qy, qy_path)
+  }
+  csl_dirs <- list.files(file.path(fix_dir, "_extensions"),
+                         recursive = TRUE, pattern = "harvard-manchester\\.csl$",
+                         full.names = TRUE)
+  for (f in csl_dirs) if (file.exists(f)) unlink(f)
+}
+for (d in list.files(fixtures_root, full.names = TRUE)) {
+  if (dir.exists(d)) shorten_csl_path(d)
+}
+
 cat("All five fixtures regenerated under", fixtures_root, "\n")

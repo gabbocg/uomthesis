@@ -22,4 +22,4 @@ format:
   uomthesis-journal-html: default
 
 bibliography: references.bib
-csl: _extensions/uomthesis-journal/csl/harvard-manchester.csl
+csl: harvard-manchester

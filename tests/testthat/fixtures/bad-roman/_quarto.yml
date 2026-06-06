@@ -26,4 +26,4 @@ format:
   uomthesis-standard-html: default
 
 bibliography: references.bib
-csl: _extensions/uomthesis-standard/csl/harvard-manchester.csl
+csl: harvard-manchester
