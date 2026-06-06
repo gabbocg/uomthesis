@@ -1,8 +1,33 @@
-# Introduction
+---
+title: "Introduction"
+---
 
-<!-- TODO: Set the context, state the overall research question, and preview
-how the constituent papers relate to each other.
+This thesis is submitted in **journal format** under the University of Manchester *Presentation of Theses Policy* section 13. The format permits doctoral candidates to organise the body of the thesis around a series of self-contained papers, framed by an overarching introduction and conclusion.
 
-Per Presentation of Theses Policy section 13.10 and the Journal-format guidance,
-this introduction should provide the rationale for journal-format submission and
-an account of how the thesis has been constructed. -->
+## Rationale for journal format
+
+The decision to submit in journal format reflects three considerations:
+
+1. **Disciplinary norms.** Research in management and organisational behaviour is typically disseminated through peer-reviewed journal articles rather than monographs. Submitting in journal format aligns the thesis with the conventions of the field.
+2. **Empirical structure.** The empirical work falls naturally into three distinct studies, each with its own data, methods, and findings. A standard-format integration would have required compressing or fragmenting the studies in awkward ways.
+3. **Career development.** Drafting the constituent papers during the doctoral period accelerates the candidate's transition to academic publishing.
+
+This format choice was made in consultation with the supervisory team during Year 2 of the programme and recorded on the Notice of Submission form.
+
+## Overarching research question
+
+> How does the adoption of policy-compliant authoring tools influence the quality and integrity of doctoral thesis submissions?
+
+The question is decomposed into three sub-questions, each addressed by one of the papers:
+
+- **Paper 1** (Chapter 2): *What patterns of adoption do we observe across UK business schools?*
+- **Paper 2** (Chapter 3): *Does compliance enforcement causally improve writing quality?*
+- **Paper 3** (Chapter 4): *How do supervisors perceive and interpret the role of tooling in supervision?*
+
+## Coherence across the papers
+
+Although each paper stands alone, the three together form a coherent body of work. Paper 1 establishes the empirical landscape of tool adoption; Paper 2 isolates the causal effect of one specific intervention (compliance enforcement); Paper 3 interprets the quantitative findings through the lived experience of supervisors. The Conclusion (Chapter 5) synthesises across the three.
+
+## Statement on the candidate's contribution
+
+The candidate is the first author of all three papers. A detailed contribution declaration is provided at the head of each paper chapter using the `::: {.contribution}` Div, as required by policy section 13.3.

@@ -14,8 +14,6 @@ The sample is restricted to three universities. The cross-sectional design precl
 
 ## Future work
 
-Three directions stand out:
-
 - A multi-country replication.
 - A panel-data extension.
 - A qualitative study of supervisor experiences.

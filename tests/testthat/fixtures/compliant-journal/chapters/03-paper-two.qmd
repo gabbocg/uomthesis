@@ -1,15 +1,49 @@
-# Paper Two Title {contribution="Briefly describe your contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author X advised on the statistical methods."}
+---
+title: "Paper 2: The Effect of Compliance Enforcement on Writing Quality: An A/B Experiment"
+---
+
+::: {.contribution}
+I designed the experimental protocol, secured ethical approval, recruited participants, randomised treatment assignment, collected outcome data, performed the statistical analysis, and wrote the manuscript. Co-author A advised on the experimental design and Co-author B served as a second blind rater.
+:::
 
 ## Abstract
 
-<!-- Paper-style abstract. -->
+We report a pre-registered randomised experiment in which 120 doctoral candidates were assigned to write a 5,000-word chapter using either a compliance-enforcing authoring tool (treatment) or an unconstrained alternative (control). Compliance enforcement caused a 0.31 standard-deviation improvement in the blinded quality rating (95% CI: 0.09--0.52, $p = 0.006$).
 
 ## Introduction
 
-## Methodology
+Paper 1 established that adoption of compliant authoring tools varies systematically across institutions. This paper asks whether adoption *causes* improvements in writing quality through a randomised experiment.
+
+## Methods
+
+### Participants and randomisation
+
+Candidates ($n = 120$) were recruited from three participating universities and randomised at the individual level. Randomisation was stratified by programme year and institution.
+
+### Outcome measure
+
+The primary outcome is a blinded expert rating of overall writing quality on a 1--7 scale, averaged across two independent raters. Inter-rater reliability was high ($\kappa = 0.78$).
 
 ## Results
 
+Treatment caused a statistically significant improvement in the quality rating. Mean quality in the treatment group was 4.92 (SD 0.91); mean in control was 4.61 (SD 0.86).
+
 ## Discussion
 
-## References
+The experimental design provides causal identification of the effect of compliance enforcement on writing quality.
+
+## Limitations
+
+The 5,000-word chapter task may not generalise to the full thesis-writing process.
+
+## Appendix 3.A: Pre-registration
+
+The full pre-registration of hypotheses, analysis plan, and stopping rule is archived at the Open Science Framework.
+
+## Appendix 3.B: Power analysis
+
+The minimum detectable effect was calculated at 0.25 standard deviations at 80% power, $\alpha = 0.05$.
+
+## Appendix 3.C: Robustness checks
+
+The headline result holds across three pre-registered robustness specifications.

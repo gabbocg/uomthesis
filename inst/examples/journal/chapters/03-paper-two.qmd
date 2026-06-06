@@ -3,7 +3,7 @@ title: "Paper 2: The Effect of Compliance Enforcement on Writing Quality: An A/B
 ---
 
 ::: {.contribution}
-I designed the experimental protocol, secured ethical approval, recruited participants, randomised treatment assignment, collected outcome data, performed the statistical analysis, and wrote the manuscript. Co-author A advised on the experimental design and Co-author B served as a second blind rater of the outcome variable.
+I designed the experimental protocol, secured ethical approval, recruited participants, randomised treatment assignment, collected outcome data, performed the statistical analysis, and wrote the manuscript. Co-author A advised on the experimental design and Co-author B served as a second blind rater.
 :::
 
 ## Abstract
@@ -12,17 +12,13 @@ We report a pre-registered randomised experiment in which 120 doctoral candidate
 
 ## Introduction
 
-Paper 1 established that adoption of compliant authoring tools varies systematically across institutions. This paper asks whether adoption *causes* improvements in writing quality, or whether the association is confounded by selection. We address the question through a randomised experiment.
+Paper 1 established that adoption of compliant authoring tools varies systematically across institutions. This paper asks whether adoption *causes* improvements in writing quality through a randomised experiment.
 
 ## Methods
 
 ### Participants and randomisation
 
-Candidates ($n = 120$) were recruited from three participating universities and randomised at the individual level to treatment ($n = 60$) or control ($n = 60$). Randomisation was stratified by programme year and institution.
-
-### Intervention
-
-The treatment group used a policy-compliance-enforcing authoring tool with structural and stylistic constraints. The control group used an unconstrained alternative.
+Candidates ($n = 120$) were recruited from three participating universities and randomised at the individual level. Randomisation was stratified by programme year and institution.
 
 ### Outcome measure
 
@@ -30,12 +26,24 @@ The primary outcome is a blinded expert rating of overall writing quality on a 1
 
 ## Results
 
-Treatment caused a statistically significant improvement in the quality rating. Mean quality in the treatment group was 4.92 (SD 0.91); mean in control was 4.61 (SD 0.86). The intent-to-treat effect was 0.31 standard deviations.
+Treatment caused a statistically significant improvement in the quality rating. Mean quality in the treatment group was 4.92 (SD 0.91); mean in control was 4.61 (SD 0.86).
 
 ## Discussion
 
-The experimental design provides causal identification of the effect of compliance enforcement on writing quality. The magnitude of the effect is comparable to other educational interventions of similar intensity.
+The experimental design provides causal identification of the effect of compliance enforcement on writing quality.
 
 ## Limitations
 
-The 5,000-word chapter task may not generalise to the full thesis-writing process. Longer-term effects on submission outcomes are not measured here.
+The 5,000-word chapter task may not generalise to the full thesis-writing process.
+
+## Appendix 3.A: Pre-registration
+
+The full pre-registration of hypotheses, analysis plan, and stopping rule is archived at the Open Science Framework.
+
+## Appendix 3.B: Power analysis
+
+The minimum detectable effect was calculated at 0.25 standard deviations at 80% power, $\alpha = 0.05$.
+
+## Appendix 3.C: Robustness checks
+
+The headline result holds across three pre-registered robustness specifications.

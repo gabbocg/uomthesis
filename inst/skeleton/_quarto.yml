@@ -7,6 +7,8 @@ book:
   chapters:
     - index.qmd
     - chapters/00-abstract.qmd
+    - chapters/00-declaration.qmd
+    - chapters/00-copyright.qmd
     - chapters/00-acknowledgements.qmd
     - part: "Main body"
       chapters:

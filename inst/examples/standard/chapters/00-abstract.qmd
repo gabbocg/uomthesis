@@ -3,8 +3,10 @@ title: "Abstract"
 unnumbered: true
 ---
 
-This thesis examines an example research question to demonstrate the capabilities of the `uomthesis` Quarto template in *standard* format. The work develops a structured argument across six chapters, drawing on a mixed-methods approach.
+This thesis examines an example research question to demonstrate the capabilities of the `uomthesis` Quarto template. The work develops a structured argument across six chapters, drawing on a mixed-methods approach.
 
-Three principal contributions emerge. First, the analytical framework integrates two previously distinct literatures. Second, the empirical findings challenge a widely accepted assumption in the field. Third, the discussion offers practical implications for practitioners and policymakers.
+Three principal contributions emerge. First, the analytical framework integrates two previously distinct literatures. Second, the empirical findings challenge a widely accepted assumption in the field. Third, the discussion offers practical implications.
 
-The thesis conforms to the University of Manchester *Presentation of Theses Policy*. All findings are reproducible from the underlying data and code, which are made available alongside the submitted PDF.
+The thesis conforms to the University of Manchester *Presentation of Theses Policy*. All findings are reproducible from the underlying data and code.
+
+<!-- TODO: Replace this placeholder with your own abstract. Aim for under ~350 words. -->

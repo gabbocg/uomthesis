@@ -1,4 +1,45 @@
-# Methodology
+---
+title: "Methodology"
+---
 
-<!-- TODO: Describe and justify your methodological choices. Be specific enough
-that a reader could replicate the study. -->
+This chapter describes the methodological choices and demonstrates equations, tables, and reproducible R code.
+
+## Approach
+
+A mixed-methods design was adopted. Quantitative data were analysed using ordinary least squares regression:
+
+$$
+y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \varepsilon_i
+$$ {#eq-ols}
+
+where $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$. The strategy follows @cohen2013statistical.
+
+For inline mathematics, the t-statistic is $t = \hat{\beta} / \text{SE}(\hat{\beta})$.
+
+## Sample
+
+Table @tbl-sample summarises the descriptive statistics for $n = 240$ observations.
+
+| Variable        |   Mean |    SD |    Min |    Max |
+|:----------------|-------:|------:|-------:|-------:|
+| Age             |   27.3 |   3.1 |     22 |     39 |
+| Programme year  |    2.4 |   1.0 |      1 |      4 |
+| Word count      | 45,210 | 12,800 | 12,000 | 78,000 |
+
+: Descriptive statistics of the sample. {#tbl-sample}
+
+## Reproducible code
+
+```{r}
+#| label: fit-model
+#| echo: true
+#| eval: true
+set.seed(42)
+df <- data.frame(y = rnorm(100, 5, 1.5), x1 = rnorm(100), x2 = rnorm(100))
+fit <- lm(y ~ x1 + x2, data = df)
+round(summary(fit)$coefficients, 3)
+```
+
+## Ethics
+
+Ethical approval was obtained from the AMBS Research Ethics Committee. All participants gave informed consent.

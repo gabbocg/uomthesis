@@ -1,6 +1,23 @@
-# Introduction
+---
+title: "Introduction"
+---
 
-<!-- TODO: Write the introduction. State the research question, motivate the study,
-and outline the structure of the thesis. -->
+This chapter introduces the research problem and outlines the structure of the thesis. It also demonstrates how to compose chapters in a Quarto-powered thesis using the `uomthesis` template.
 
-This chapter introduces the research question and motivates the study.
+## Background
+
+The empirical motivation emerges from recent developments in postgraduate research practice. As @smith2024innovation observe, the rise of computational reproducibility has fundamentally changed how doctoral theses are written, reviewed, and archived.[^reproducibility]
+
+[^reproducibility]: Footnotes are written using `[^id]` markers in the text and a corresponding `[^id]: text` definition.
+
+The reproducibility movement accelerated dramatically with the popularisation of literate programming tools in the 2010s [@xie2018quarto].
+
+## Research question
+
+> How does the adoption of policy-compliant authoring tools influence the quality and integrity of doctoral thesis submissions?
+
+The question is explored through three sub-questions covering technical features, candidate and supervisor perceptions, and institutional lessons.
+
+## Structure of the thesis
+
+Chapter 2 surveys the prior literature and identifies the research gap. Chapter 3 describes the methodological approach. Chapter 4 presents the empirical findings. Chapter 5 interprets those findings, and Chapter 6 concludes by summarising the contributions and outlining future work.

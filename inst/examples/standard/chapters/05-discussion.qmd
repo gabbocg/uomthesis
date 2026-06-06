@@ -18,7 +18,8 @@ Three explanations are plausible:
 
 ## Practical implications
 
-For institutions considering adoption of compliant tooling, two implications follow:
+::: {.callout-tip}
+## Practical tip
 
-- Compliance enforcement should be configurable rather than absolute.
-- **Training and supervisor buy-in are crucial.**
+For institutions considering adoption of compliant tooling, compliance enforcement should be configurable rather than absolute, and supervisor buy-in is crucial.
+:::

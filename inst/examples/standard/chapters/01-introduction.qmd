@@ -2,7 +2,7 @@
 title: "Introduction"
 ---
 
-This chapter introduces the research problem and outlines the structure of the thesis.
+This chapter introduces the research problem and outlines the structure of the thesis. It also demonstrates how to compose chapters in a Quarto-powered thesis using the `uomthesis` template.
 
 ## Background
 
@@ -16,7 +16,7 @@ The reproducibility movement accelerated dramatically with the popularisation of
 
 > How does the adoption of policy-compliant authoring tools influence the quality and integrity of doctoral thesis submissions?
 
-This question is explored through three sub-questions covering technical features, candidate and supervisor perceptions, and institutional lessons.
+The question is explored through three sub-questions covering technical features, candidate and supervisor perceptions, and institutional lessons.
 
 ## Structure of the thesis
 

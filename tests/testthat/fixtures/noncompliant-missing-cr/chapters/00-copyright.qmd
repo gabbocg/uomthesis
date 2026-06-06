@@ -1,0 +1,6 @@
+---
+title: "Copyright Statement"
+unnumbered: true
+---
+
+(All four policy-mandated bullets have been removed for testing.)

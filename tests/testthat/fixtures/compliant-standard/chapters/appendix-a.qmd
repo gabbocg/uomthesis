@@ -1,4 +1,31 @@
-# Appendix A
+---
+title: "Appendix A: Additional Material"
+---
 
-<!-- TODO: Supplementary material. Appendices do not count toward the main-text
-word limit. -->
+This appendix collects supplementary material referenced throughout the main text.
+
+## A.1 Robustness checks
+
+The main regression in Chapter 4 was re-estimated under three robustness specifications. All within 0.05 standard deviations of the result in Table @tbl-results.
+
+## A.2 Callout boxes
+
+::: {.callout-note}
+## Methodological note
+
+The regression assumes the error term is uncorrelated with the regressors.
+:::
+
+::: {.callout-important}
+## Reproducibility
+
+All figures and tables in this thesis are generated from code embedded in the source `.qmd` files.
+:::
+
+## A.3 Mathematical derivations
+
+Let $\mathbf{X}$ be the $n \times k$ design matrix. The OLS estimator is:
+
+$$
+\hat{\boldsymbol{\beta}} = \left( \mathbf{X}^{\top} \mathbf{X} \right)^{-1} \mathbf{X}^{\top} \mathbf{y}
+$$

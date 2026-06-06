@@ -72,6 +72,21 @@ find_partial <- function(ctx, partial_name) {
   if (file.exists(abs)) abs else NULL
 }
 
+# Find the source of a preliminary section. From v0.1 these live as chapter
+# files (chapters/00-<name>.qmd); older projects had them as Pandoc partials
+# (_extensions/uomthesis-<fmt>/partials/<name>.tex). Prefer the chapter form
+# if both are present.
+#
+# `name` is the bare role name: "declaration", "copyright", "publications",
+# "acknowledgements", "abstract".
+find_prelim_source <- function(ctx, name) {
+  chapter <- file.path(ctx$project_path, "chapters",
+                       paste0("00-", name, ".qmd"))
+  if (file.exists(chapter)) return(chapter)
+  partial <- find_partial(ctx, paste0(name, ".tex"))
+  partial
+}
+
 # Returns TRUE if `body` contains `pattern` after collapsing whitespace
 # in both to single spaces (so newlines and indentation don't defeat the match).
 whitespace_contains <- function(body, pattern) {
@@ -424,18 +439,23 @@ rule_declaration_text <- function() list(
   formats    = c("standard", "journal"),
   severity   = "error",
   check      = function(ctx) {
-    path <- find_partial(ctx, "declaration.tex")
+    path <- find_prelim_source(ctx, "declaration")
     if (is.null(path)) return(NULL)
     variant   <- ctx$metadata$declaration$variant %||% "either"
     reference <- if (variant == "or") ctx$policy$declaration_or
                  else                  ctx$policy$declaration_either
+    # The policy text is stored verbatim and ends with `;` (the EITHER variant)
+    # because the policy PDF uses `;` to separate EITHER from OR. Real
+    # declarations terminate the sentence with `.` or nothing. Strip trailing
+    # punctuation from the reference so either form passes.
+    reference <- sub("[.;,]\\s*$", "", reference)
     body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
     if (whitespace_contains(body, reference)) return(NULL)
     list(
       rule_id    = "declaration-text",
       severity   = "error",
-      message    = cli::format_inline("declaration.tex does not contain the policy {.val {variant}} text."),
-      location   = list(file = "_extensions/uomthesis-*/partials/declaration.tex"),
+      message    = cli::format_inline("Declaration source does not contain the policy {.val {variant}} text."),
+      location   = list(file = sub(ctx$project_path, "", path, fixed = TRUE)),
       policy_ref = "\u00a78.1.f",
       hint       = "Restore the policy text verbatim, or change uomthesis.declaration.variant if joint authorship applies."
     )
@@ -453,7 +473,7 @@ rule_copyright_text <- function() list(
   formats    = c("standard", "journal"),
   severity   = "error",
   check      = function(ctx) {
-    path <- find_partial(ctx, "copyright.tex")
+    path <- find_prelim_source(ctx, "copyright")
     if (is.null(path)) return(NULL)
     body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
     out <- list()
@@ -463,8 +483,8 @@ rule_copyright_text <- function() list(
       out <- c(out, list(list(
         rule_id    = "copyright-text",
         severity   = "error",
-        message    = cli::format_inline("copyright.tex is missing or has altered bullet {i}."),
-        location   = list(file = "_extensions/uomthesis-*/partials/copyright.tex"),
+        message    = cli::format_inline("Copyright source is missing or has altered bullet {i}."),
+        location   = list(file = sub(ctx$project_path, "", path, fixed = TRUE)),
         policy_ref = "\u00a78.1.g",
         hint       = paste0("Restore bullet ", i, " verbatim: \"", substr(bullet, 1, 80), "...\".")
       )))
@@ -486,15 +506,18 @@ rule_copyright_author_match <- function() list(
   formats    = c("standard", "journal"),
   severity   = "error",
   check      = function(ctx) {
-    path <- find_partial(ctx, "copyright.tex")
+    path <- find_prelim_source(ctx, "copyright")
     if (is.null(path)) return(NULL)
     cand <- ctx$metadata$candidate
     if (is.null(cand) || is.null(cand$forename) || is.null(cand$surname)) return(NULL)
     body <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = " ")
-    # Accept literal candidate name OR Pandoc template variables (unrendered scaffold)
+    # Accept literal candidate name, Pandoc template variables (legacy scaffold),
+    # or Quarto {{< meta >}} shortcodes (current chapter-based scaffold).
     uses_pandoc_vars <- grepl("$uomthesis.candidate.forename$", body, fixed = TRUE) &&
                         grepl("$uomthesis.candidate.surname$",  body, fixed = TRUE)
-    if (uses_pandoc_vars) return(NULL)
+    uses_meta_shortcode <- grepl("uomthesis.candidate.forename", body, fixed = TRUE) &&
+                           grepl("uomthesis.candidate.surname",  body, fixed = TRUE)
+    if (uses_pandoc_vars || uses_meta_shortcode) return(NULL)
     has_forename <- grepl(cand$forename, body, fixed = TRUE)
     has_surname  <- grepl(cand$surname,  body, fixed = TRUE)
     if (has_forename && has_surname) return(NULL)
@@ -502,9 +525,9 @@ rule_copyright_author_match <- function() list(
       rule_id    = "copyright-author-match",
       severity   = "error",
       message    = cli::format_inline(
-        "copyright.tex does not appear to reference the candidate ({cand$forename} {cand$surname})."
+        "Copyright source does not appear to reference the candidate ({cand$forename} {cand$surname})."
       ),
-      location   = list(file = "_extensions/uomthesis-*/partials/copyright.tex"),
+      location   = list(file = sub(ctx$project_path, "", path, fixed = TRUE)),
       policy_ref = "\u00a78.1.g",
       hint       = paste0("The author named in the copyright statement should match index.qmd: ",
                           cand$forename, " ", cand$surname, ".")
@@ -649,7 +672,13 @@ rule_bibliography_exists <- function() list(
   rationale  = "Bibliography files must exist on disk; a missing file means citations silently render as empty."
 )
 
-#' Rule: journal-format thesis must include a rationale partial
+#' Rule: journal-format thesis must include a rationale for the format choice
+#'
+#' Policy section 13.10 mandates that journal-format theses include a
+#' rationale section. From v0.1 the rationale lives as a section in the
+#' introduction chapter (typically chapters/01-introduction.qmd) rather
+#' than as a separate partial. The rule checks both locations.
+#'
 #' @return A rule spec list.
 #' @keywords internal
 rule_journal_rationale_present <- function() list(
@@ -659,6 +688,19 @@ rule_journal_rationale_present <- function() list(
   formats    = "journal",
   severity   = "error",
   check      = function(ctx) {
+    # New location: a "rationale" mention in the introduction chapter.
+    intro_candidates <- c(
+      file.path(ctx$project_path, "chapters", "01-introduction.qmd"),
+      file.path(ctx$project_path, "chapters", "01-introduction.Rmd")
+    )
+    intro_path <- intro_candidates[file.exists(intro_candidates)][1]
+    if (!is.na(intro_path)) {
+      lines <- readLines(intro_path, warn = FALSE, encoding = "UTF-8")
+      body  <- paste(lines, collapse = " ")
+      has_rationale_section <- grepl("(?i)rationale|journal format", body, perl = TRUE)
+      if (has_rationale_section && nchar(trimws(body)) >= 200) return(NULL)
+    }
+    # Legacy location: a rationale.tex partial in the extension.
     ext_dir <- file.path(ctx$project_path, "_extensions", "uomthesis-journal")
     if (!dir.exists(ext_dir)) return(NULL)
     partial <- file.path(ext_dir, "partials", "rationale.tex")
@@ -666,10 +708,10 @@ rule_journal_rationale_present <- function() list(
       return(list(
         rule_id    = "journal-rationale-present",
         severity   = "error",
-        message    = "Journal format thesis is missing the required rationale partial.",
-        location   = list(file = "_extensions/uomthesis-journal/partials/rationale.tex"),
+        message    = "Journal format thesis has no rationale section in the introduction and no rationale partial.",
+        location   = list(file = "chapters/01-introduction.qmd"),
         policy_ref = "\u00a713.10",
-        hint       = "Add a rationale.tex partial; see Quarto extension scaffolding."
+        hint       = "Add a 'Rationale for journal format' section to chapters/01-introduction.qmd."
       ))
     }
     lines <- readLines(partial, warn = FALSE, encoding = "UTF-8")

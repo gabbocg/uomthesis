@@ -6,7 +6,10 @@ book:
   title: "{{title}}"
   chapters:
     - index.qmd
+    - chapters/00-publications.qmd
     - chapters/00-abstract.qmd
+    - chapters/00-declaration.qmd
+    - chapters/00-copyright.qmd
     - chapters/00-acknowledgements.qmd
     - part: "Main body"
       chapters:
@@ -14,9 +17,7 @@ book:
         - chapters/02-paper-one.qmd
         - chapters/03-paper-two.qmd
         - chapters/04-paper-three.qmd
-        - chapters/05-discussion.qmd
-  appendices:
-    - chapters/appendix-a.qmd
+        - chapters/05-conclusion.qmd
 
 format:
   uomthesis-journal-pdf: default

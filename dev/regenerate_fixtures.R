@@ -1,11 +1,8 @@
 # dev/regenerate_fixtures.R
 # Regenerate the compliance fixtures from scratch.
 # Run after the scaffolder or rules change in a way that affects fixture content.
-#
-# Usage (from the project root):
-#   Rscript dev/regenerate_fixtures.R
 
-devtools::load_all(quiet = TRUE)
+library(uomthesis)
 library(fs)
 
 fixtures_root <- "tests/testthat/fixtures"
@@ -30,29 +27,29 @@ create_thesis(
   year = 2027, division = "MSM", open = FALSE
 )
 
-# 3. noncompliant-missing-cr (copyright partial replaced with stub)
+# 3. noncompliant-missing-cr (copyright chapter file reduced to a stub)
 src <- file.path(fixtures_root, "compliant-standard")
 dst <- file.path(fixtures_root, "noncompliant-missing-cr")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)
 writeLines(
-  "\\chapter*{Copyright Statement}",
-  file.path(dst, "_extensions/uomthesis-standard/partials/copyright.tex")
+  c("---", "title: \"Copyright Statement\"", "unnumbered: true", "---", "",
+    "(All four policy-mandated bullets have been removed for testing.)"),
+  file.path(dst, "chapters/00-copyright.qmd")
 )
 
-# 4. noncompliant-altered-decl (declaration text replaced with paraphrase)
+# 4. noncompliant-altered-decl (declaration chapter file paraphrased)
 dst <- file.path(fixtures_root, "noncompliant-altered-decl")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)
 writeLines(
-  c("\\chapter*{Declaration}",
-    "\\addcontentsline{toc}{chapter}{Declaration}",
-    "",
-    "I hereby declare that all the work in this thesis is original and entirely my own."),
-  file.path(dst, "_extensions/uomthesis-standard/partials/declaration.tex")
+  c("---", "title: \"Declaration of Originality\"", "unnumbered: true", "---", "",
+    "I hereby declare that all the work in this thesis is original",
+    "and entirely my own."),
+  file.path(dst, "chapters/00-declaration.qmd")
 )
 
-# 5. noncompliant-roman (linestretch changed to illegal value 1.0)
+# 5. noncompliant-roman (illegal linespacing in index.qmd YAML)
 dst <- file.path(fixtures_root, "noncompliant-roman")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)

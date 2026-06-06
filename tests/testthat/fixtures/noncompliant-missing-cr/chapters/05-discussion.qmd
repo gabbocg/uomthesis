@@ -1,3 +1,25 @@
-# Discussion
+---
+title: "Discussion"
+---
 
-<!-- TODO: Interpret the results in the context of the literature. -->
+This chapter interprets the findings.
+
+## Interpretation
+
+The positive coefficient on $x_1$ in Table @tbl-results supports the main hypothesis. The effect size is comparable to the meta-analytic estimates reported by @smith2024innovation.
+
+## Why $x_2$ is borderline
+
+Three explanations are plausible:
+
+1. **Measurement error** in the $x_2$ instrument.
+2. **Selection** at the institutional level.
+3. **A genuine null effect**.
+
+## Practical implications
+
+::: {.callout-tip}
+## Practical tip
+
+For institutions considering adoption of compliant tooling, compliance enforcement should be configurable rather than absolute, and supervisor buy-in is crucial.
+:::

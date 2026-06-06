@@ -2,7 +2,7 @@
 title: "Methodology"
 ---
 
-This chapter describes the methodological choices. It demonstrates equations, tables, and reproducible R code.
+This chapter describes the methodological choices and demonstrates equations, tables, and reproducible R code.
 
 ## Approach
 

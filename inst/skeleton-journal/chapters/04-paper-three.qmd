@@ -1,15 +1,65 @@
-# Paper Three Title {contribution="Briefly describe your contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author X advised on the statistical methods."}
+---
+title: "Paper 3: Supervisor Perspectives on Authoring Tooling in Doctoral Supervision: A Qualitative Study"
+---
+
+::: {.contribution}
+I designed the interview protocol, recruited and interviewed all 15 supervisor participants, transcribed the interviews, conducted the primary thematic analysis, and wrote the manuscript. Co-author C served as a second independent coder for inter-rater reliability and reviewed the manuscript.
+:::
 
 ## Abstract
 
-<!-- Paper-style abstract. -->
+Semi-structured interviews with 15 doctoral supervisors at three UK business schools examined how supervisors interpret and respond to candidate use of policy-compliant authoring tools. Three themes emerged: *delegation of compliance work*, *displacement of intellectual conversation*, and *re-distribution of authority over thesis structure*.
 
 ## Introduction
 
-## Methodology
+Papers 1 and 2 establish that policy-compliant tooling is increasingly adopted and that adoption causally improves writing quality. But the quantitative work cannot illuminate the *meaning* of these tools for the supervisory relationship.
 
-## Results
+## Methods
+
+### Sampling
+
+A purposive sample of 15 supervisors was recruited from three universities, balanced by gender, career stage, and disciplinary sub-field.
+
+### Analysis
+
+Transcripts were coded using reflexive thematic analysis.
+
+## Findings
+
+### Theme: delegation of compliance work
+
+Supervisors framed compliance tooling as a "delegation" that freed the supervisor-candidate conversation from procedural concerns:
+
+> Before, I would spend half of our meeting going over the declaration template and the copyright statement. Now the tool does that. We can actually talk about the argument.
+>
+> --- Supervisor 7, senior professor
+
+### Theme: displacement of intellectual conversation
+
+A minority of supervisors expressed concern that the tools could *displace* intellectual conversation.
+
+### Theme: re-distribution of authority
+
+The most consistent theme was a perceived shift in authority over thesis structure from the supervisor to the institution (via the tool).
 
 ## Discussion
 
-## References
+The findings complement the quantitative results in Papers 1 and 2 by showing that the *meaning* of tooling adoption is contested.
+
+## Limitations
+
+The sample is restricted to three universities and to business and management disciplines.
+
+## Appendix 4.A: Interview topic guide
+
+The semi-structured interview topic guide developed across the first four interviews is reproduced below.
+
+1. Tell me about your current doctoral supervisees.
+2. Are any of your supervisees using a policy-compliant authoring tool?
+3. What has been your experience of working with candidates who use these tools?
+4. Have there been moments of difficulty or tension related to the tool?
+5. Whose decisions does the tool encode? Do you see this as appropriate?
+
+## Appendix 4.B: Coding framework
+
+The coding framework includes three top-level themes and twelve sub-codes.

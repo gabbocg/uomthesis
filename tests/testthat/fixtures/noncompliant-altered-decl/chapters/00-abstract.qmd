@@ -3,6 +3,10 @@ title: "Abstract"
 unnumbered: true
 ---
 
-<!-- Write your abstract here. Policy section 8.1.e mandates a single-page abstract. -->
+This thesis examines an example research question to demonstrate the capabilities of the `uomthesis` Quarto template. The work develops a structured argument across six chapters, drawing on a mixed-methods approach.
 
-Your abstract should give a concise summary of the research problem, the methods used, the principal findings, and the contribution to knowledge. Aim for under ~350 words so that the rendered abstract fits on one A4 page at 12pt with 1.5 line spacing.
+Three principal contributions emerge. First, the analytical framework integrates two previously distinct literatures. Second, the empirical findings challenge a widely accepted assumption in the field. Third, the discussion offers practical implications.
+
+The thesis conforms to the University of Manchester *Presentation of Theses Policy*. All findings are reproducible from the underlying data and code.
+
+<!-- TODO: Replace this placeholder with your own abstract. Aim for under ~350 words. -->

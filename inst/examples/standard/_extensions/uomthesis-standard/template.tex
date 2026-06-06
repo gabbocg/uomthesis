@@ -108,40 +108,10 @@ $if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif
 $uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
 \end{titlepage}
 
-%% ===== DECLARATION (policy section 8.1.f) =====
-\chapter*{Declaration}
-\addcontentsline{toc}{chapter}{Declaration}
-
-I declare $if(uomthesis.declaration.joint_authorship_details)$what portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning. This should include reference to joint authorship of published materials which might have been included in a thesis submitted by another student to this university or any other university or other institute of learning.
-
-$uomthesis.declaration.joint_authorship_details$$else$that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning.$endif$
-
-%% ===== COPYRIGHT STATEMENT (policy section 8.1.g) =====
-\chapter*{Copyright Statement}
-\addcontentsline{toc}{chapter}{Copyright Statement}
-
-\begin{itemize}
-\item The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the "Copyright") and they have given the University of Manchester certain rights to use such Copyright, including for administrative purposes.
-
-\item Copies of this thesis, either in full or in extracts and whether in hard or electronic copy, may be made only in accordance with the Copyright, Designs and Patents Act 1988 (as amended) and regulations issued under it or, where appropriate, in accordance with licensing agreements which the University has from time to time. This page must form part of any such copies made.
-
-\item The ownership of certain Copyright, patents, designs, trademarks and other intellectual property (the "Intellectual Property") and any reproductions of copyright works in the thesis, for example graphs and tables ("Reproductions"), which may be described in this thesis, may not be owned by the author and may be owned by third parties. Such Intellectual Property and Reproductions cannot and must not be made available for use without the prior written permission of the owner(s) of the relevant Intellectual Property and/or Reproductions.
-
-\item Further information on the conditions under which disclosure, publication and commercialisation of this thesis, the Copyright and any Intellectual Property and/or Reproductions described in it may take place is available in the University IP Policy, in any relevant Thesis restriction declarations deposited in the University Library, the University Library's regulations and in the University's policy on the Presentation of Theses.
-\end{itemize}
-
-\vspace{2em}
-\noindent $uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$
-
-%% ===== AI DISCLOSURE (policy section 9.1.d, optional) =====
-$if(uomthesis.ai_disclosure.include)$
-\chapter*{Generative AI Disclosure}
-\addcontentsline{toc}{chapter}{Generative AI Disclosure}
-
-$if(uomthesis.ai_disclosure.description)$$uomthesis.ai_disclosure.description$$else$Generative AI Disclosure: I used $for(uomthesis.ai_disclosure.tools)$$uomthesis.ai_disclosure.tools$$sep$, $endfor$ to assist in idea generation, image creation, and for feedback on grammar and content. I implemented some of its recommendations.$endif$
-$endif$
-
-%% ===== Table of contents =====
+%% ===== Table of contents + Lists =====
+%% Per policy section 8.1 order: contents > other lists > abstract > declaration > copyright
+%% Abstract, Declaration, Copyright and Acknowledgements all live as unnumbered
+%% chapter files in chapters/00-*.qmd (kept in this order in _quarto.yml).
 $if(toc)$
 \setcounter{tocdepth}{$toc-depth$}
 \tableofcontents

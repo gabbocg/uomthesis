@@ -1,4 +1,6 @@
 \chapter*{Declaration}
 \addcontentsline{toc}{chapter}{Declaration}
 
-I hereby declare that all the work in this thesis is original and entirely my own.
+I declare $if(uomthesis.declaration.variant)$$if(uomthesis.declaration.variant == "or")$what portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning. This should include reference to joint authorship of published materials which might have been included in a thesis submitted by another student to this university or any other university or other institute of learning.
+
+$uomthesis.declaration.joint_authorship_details$$else$that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning;$endif$$else$that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning;$endif$

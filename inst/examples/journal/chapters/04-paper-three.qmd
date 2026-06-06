@@ -12,21 +12,17 @@ Semi-structured interviews with 15 doctoral supervisors at three UK business sch
 
 ## Introduction
 
-Papers 1 and 2 establish that policy-compliant tooling is increasingly adopted and that adoption causally improves writing quality. But the quantitative work cannot illuminate the *meaning* of these tools for the supervisory relationship. This paper addresses that gap through qualitative interviews.
+Papers 1 and 2 establish that policy-compliant tooling is increasingly adopted and that adoption causally improves writing quality. But the quantitative work cannot illuminate the *meaning* of these tools for the supervisory relationship.
 
 ## Methods
 
 ### Sampling
 
-A purposive sample of 15 supervisors was recruited from three universities, balanced by gender, career stage, and disciplinary sub-field. Sampling continued until thematic saturation was reached, following @brown2023qualitative.
-
-### Data collection
-
-Semi-structured interviews of 45--75 minutes were conducted via video conference and audio-recorded with consent.
+A purposive sample of 15 supervisors was recruited from three universities, balanced by gender, career stage, and disciplinary sub-field.
 
 ### Analysis
 
-Transcripts were coded using reflexive thematic analysis. The candidate and Co-author C independently coded the first five transcripts; coding inconsistencies were resolved through discussion, after which the candidate completed the remaining coding.
+Transcripts were coded using reflexive thematic analysis.
 
 ## Findings
 
@@ -40,11 +36,7 @@ Supervisors framed compliance tooling as a "delegation" that freed the superviso
 
 ### Theme: displacement of intellectual conversation
 
-A minority of supervisors expressed concern that the tools could *displace* intellectual conversation by making structural choices invisible:
-
-> The candidate doesn't even see the decisions the tool is making. There's a risk that they internalise these conventions without ever interrogating them.
->
-> --- Supervisor 11, mid-career
+A minority of supervisors expressed concern that the tools could *displace* intellectual conversation.
 
 ### Theme: re-distribution of authority
 
@@ -52,8 +44,22 @@ The most consistent theme was a perceived shift in authority over thesis structu
 
 ## Discussion
 
-The findings complement the quantitative results in Papers 1 and 2 by showing that the *meaning* of tooling adoption is contested. The implication for institutional policy is that tool deployment should be accompanied by supervisor training that addresses these tensions directly.
+The findings complement the quantitative results in Papers 1 and 2 by showing that the *meaning* of tooling adoption is contested.
 
 ## Limitations
 
 The sample is restricted to three universities and to business and management disciplines.
+
+## Appendix 4.A: Interview topic guide
+
+The semi-structured interview topic guide developed across the first four interviews is reproduced below.
+
+1. Tell me about your current doctoral supervisees.
+2. Are any of your supervisees using a policy-compliant authoring tool?
+3. What has been your experience of working with candidates who use these tools?
+4. Have there been moments of difficulty or tension related to the tool?
+5. Whose decisions does the tool encode? Do you see this as appropriate?
+
+## Appendix 4.B: Coding framework
+
+The coding framework includes three top-level themes and twelve sub-codes.

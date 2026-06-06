@@ -1,0 +1,7 @@
+---
+title: "Declaration of Originality"
+unnumbered: true
+---
+
+I hereby declare that all the work in this thesis is original
+and entirely my own.

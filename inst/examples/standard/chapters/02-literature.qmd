@@ -6,7 +6,7 @@ This chapter surveys the prior literature in two strands and synthesises a resea
 
 ## Strand A: organisational adoption of authoring tools
 
-The earliest empirical work on this topic appears in @cohen2013statistical, where the authors note:
+The earliest empirical work appears in @cohen2013statistical, where the authors note:
 
 > The choice of authoring tool is not neutral; it shapes how researchers think about the structure of their argument, the role of evidence, and the relationship between writer and reader.
 >
