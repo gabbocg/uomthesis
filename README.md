@@ -9,7 +9,7 @@
 
 ## Overview
 
-**uomthesis** is an R package that ships a Quarto template and a compliance validator for PhD theses submitted to Alliance Manchester Business School (AMBS) in the Faculty of Humanities at The University of Manchester. `create_thesis()` scaffolds a policy-compliant Quarto book project in either a monograph (`standard`) or journal-format (`journal`, 1–10 constituent papers) layout, with margins, font, line spacing, declaration, copyright statement, and preliminary page order baked in per the *Presentation of Theses Policy*. `check_thesis()` runs 18 source-phase rules against the project and reports findings as console, markdown, or JSON. `word_count()` counts the main text per the policy definition (section 4.6 fn. 1) and checks it against the applicable cap. Five citation styles ship bundled (Harvard-Manchester, APA, Chicago author-date, MHRA, Vancouver), pinned by sha256.
+**uomthesis** is an R package for writing a University of Manchester AMBS PhD thesis in Quarto. `create_thesis()` scaffolds a policy-compliant book project (`standard` monograph or `journal`-format with 1–10 papers). `check_thesis()` runs 18 source-phase rules against the project; `word_count()` checks the main text against the policy cap. Five citation styles ship bundled (Harvard-Manchester, APA, Chicago author-date, MHRA, Vancouver).
 
 ## Installation
 
