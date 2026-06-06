@@ -9,7 +9,7 @@
 
 ## Overview
 
-**uomthesis** is an R package for writing a University of Manchester AMBS PhD thesis in Quarto. `create_thesis()` scaffolds a policy-compliant book project (`standard` monograph or `journal`-format with 1–10 papers). `check_thesis()` runs 18 source-phase rules against the project; `word_count()` checks the main text against the policy cap. Five citation styles ship bundled (Harvard-Manchester, APA, Chicago author-date, MHRA, Vancouver).
+**uomthesis** is an R package for writing a University of Manchester AMBS PhD thesis in Quarto. `create_thesis()` scaffolds a policy-compliant book project. `check_thesis()` runs 18 source-phase rules. `word_count()` checks the main text against the policy cap.
 
 ## Installation
 
