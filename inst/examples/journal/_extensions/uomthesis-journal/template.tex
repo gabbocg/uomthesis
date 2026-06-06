@@ -1,0 +1,169 @@
+\documentclass[$if(fontsize)$$fontsize$,$endif$a4paper]{report}
+
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{fontspec}
+$if(mainfont)$
+  \setmainfont{$mainfont$}
+$endif$
+\else
+  % pdfLaTeX fallback: only Times New Roman is policy-safe here
+  \usepackage{mathptmx}
+\fi
+
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$else$
+\usepackage[left=40mm,right=15mm,top=20mm,bottom=20mm]{geometry}
+$endif$
+
+\usepackage{setspace}
+$if(linestretch)$\setstretch{$linestretch$}$endif$
+
+% Policy section 7.4: single Arabic sequence, no Romans, starting at title page
+\usepackage{fancyhdr}
+\pagenumbering{arabic}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Policy section 7.7: blank pages must say "Blank page"
+\newcommand{\blankpage}{\clearpage\thispagestyle{empty}\null\vfill
+  \centerline{Blank page}\vfill\clearpage}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{hidelinks}
+
+% Maths
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+% Tables / captions / floats
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{float}
+
+% Pandoc helper macros
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\real}[1]{#1}
+
+% Pandoc citeproc helpers
+\providecommand{\citeproctext}{}
+\providecommand{\citeproc}[2]{\hyper@@link[cite]{}{ref-#1}{#2}\nocite{#1}}
+
+% Pandoc CSL helper macros (for the rendered references list)
+\usepackage{calc}
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newenvironment{CSLReferences}[2]
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
+  \fi
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+\begin{document}
+
+%% ===== TITLE PAGE (policy section 8.1.b) =====
+\begin{titlepage}
+\centering
+\vspace*{6cm}
+{\Large\bfseries $title$\par}
+\vspace{3cm}
+A thesis submitted to The University of Manchester\\
+for the degree of $uomthesis.degree$\\
+in the Faculty of $uomthesis.faculty$.
+\vspace{3cm}
+
+$uomthesis.year$
+\vfill
+$uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$
+$if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif$\\[1ex]
+$uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
+\end{titlepage}
+
+%% ===== DECLARATION (policy section 8.1.f) =====
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+
+I declare $if(uomthesis.declaration.joint_authorship_details)$what portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning. This should include reference to joint authorship of published materials which might have been included in a thesis submitted by another student to this university or any other university or other institute of learning.
+
+$uomthesis.declaration.joint_authorship_details$$else$that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning.$endif$
+
+%% ===== COPYRIGHT STATEMENT (policy section 8.1.g) =====
+\chapter*{Copyright Statement}
+\addcontentsline{toc}{chapter}{Copyright Statement}
+
+\begin{itemize}
+\item The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the "Copyright") and they have given the University of Manchester certain rights to use such Copyright, including for administrative purposes.
+
+\item Copies of this thesis, either in full or in extracts and whether in hard or electronic copy, may be made only in accordance with the Copyright, Designs and Patents Act 1988 (as amended) and regulations issued under it or, where appropriate, in accordance with licensing agreements which the University has from time to time. This page must form part of any such copies made.
+
+\item The ownership of certain Copyright, patents, designs, trademarks and other intellectual property (the "Intellectual Property") and any reproductions of copyright works in the thesis, for example graphs and tables ("Reproductions"), which may be described in this thesis, may not be owned by the author and may be owned by third parties. Such Intellectual Property and Reproductions cannot and must not be made available for use without the prior written permission of the owner(s) of the relevant Intellectual Property and/or Reproductions.
+
+\item Further information on the conditions under which disclosure, publication and commercialisation of this thesis, the Copyright and any Intellectual Property and/or Reproductions described in it may take place is available in the University IP Policy, in any relevant Thesis restriction declarations deposited in the University Library, the University Library's regulations and in the University's policy on the Presentation of Theses.
+\end{itemize}
+
+\vspace{2em}
+\noindent $uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$
+
+%% ===== AI DISCLOSURE (policy section 9.1.d, optional) =====
+$if(uomthesis.ai_disclosure.include)$
+\chapter*{Generative AI Disclosure}
+\addcontentsline{toc}{chapter}{Generative AI Disclosure}
+
+$if(uomthesis.ai_disclosure.description)$$uomthesis.ai_disclosure.description$$else$Generative AI Disclosure: I used $for(uomthesis.ai_disclosure.tools)$$uomthesis.ai_disclosure.tools$$sep$, $endfor$ to assist in idea generation, image creation, and for feedback on grammar and content. I implemented some of its recommendations.$endif$
+$endif$
+
+%% ===== RATIONALE (policy section 13.10, journal-format only) =====
+\chapter*{Rationale}
+\addcontentsline{toc}{chapter}{Rationale}
+
+$if(uomthesis.journal.rationale)$
+$uomthesis.journal.rationale$
+$else$
+\emph{This thesis is submitted in Journal Format. Include here a short explanation of the rationale for using this format and an account of how the thesis has been constructed, as required by the Presentation of Theses Policy section 13.10.}
+$endif$
+
+%% ===== Table of contents =====
+$if(toc)$
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+$endif$
+
+$if(lof)$\listoffigures$endif$
+$if(lot)$\listoftables$endif$
+
+$body$
+
+$for(include-after)$
+$include-after$
+$endfor$
+
+\end{document}

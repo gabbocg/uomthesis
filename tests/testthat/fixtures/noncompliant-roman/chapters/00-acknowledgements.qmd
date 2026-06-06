@@ -1,0 +1,16 @@
+---
+title: "Acknowledgements"
+unnumbered: true
+---
+
+<!--
+Optional. Policy section 9.1.b allows a dedication and acknowledgements after
+the compulsory preliminary pages. Acknowledgements do not count toward the
+main-text word limit.
+-->
+
+I would like to thank my supervisors for their guidance throughout this research, my examiners for their constructive feedback, and the participants who generously gave their time to this study.
+
+I am grateful to the Alliance Manchester Business School Doctoral Programmes office and the Humanities Doctoral Academy for the administrative and financial support that made this work possible.
+
+Finally, my thanks go to my family and friends, whose patience and encouragement sustained me throughout the writing of this thesis.

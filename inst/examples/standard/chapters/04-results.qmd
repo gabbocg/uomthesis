@@ -1,0 +1,35 @@
+---
+title: "Results"
+---
+
+This chapter presents the empirical findings.
+
+## Descriptive analysis
+
+Figure @fig-distribution shows the distribution of the outcome variable.
+
+```{r}
+#| label: fig-distribution
+#| fig-cap: "Distribution of the outcome variable across the sample."
+#| fig-width: 6
+#| fig-height: 4
+#| echo: false
+set.seed(42)
+y <- rnorm(240, mean = 5, sd = 1.5)
+hist(y, breaks = 20, col = "#5b1a8c", border = "white",
+     main = "", xlab = "Outcome variable", ylab = "Frequency")
+```
+
+## Main regression
+
+Table @tbl-results reports the estimated coefficients.
+
+| Coefficient   | Estimate | Std. error | t-value |  p-value |
+|:--------------|---------:|-----------:|--------:|---------:|
+| Intercept     |     4.92 |       0.15 |    32.8 | < 0.001  |
+| $x_1$         |     0.34 |       0.10 |     3.4 |   0.001  |
+| $x_2$         |    -0.18 |       0.10 |    -1.8 |   0.073  |
+
+: Estimated regression coefficients. {#tbl-results}
+
+The slope on $x_1$ is positive and significant at the 1% level. The slope on $x_2$ is negative and borderline significant.

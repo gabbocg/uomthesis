@@ -1,0 +1,36 @@
+---
+title: "Paper 1: Adoption Patterns of Compliant Authoring Tools in UK Business Schools"
+---
+
+::: {.contribution}
+I designed the study, drafted and piloted the survey instrument, recruited the participating institutions, collected and cleaned the data, performed the analysis, and wrote the manuscript. Co-author A advised on sampling strategy and reviewed successive drafts.
+:::
+
+## Abstract
+
+Cross-sectional survey of doctoral programme directors at 28 UK business schools investigating patterns of adoption of policy-compliant authoring tools. We find substantial heterogeneity across institutions, with adoption rates ranging from 8% to 71%. Adoption is positively associated with institutional size and with the presence of a dedicated research-methods training programme.
+
+## Introduction
+
+Policy-compliant authoring tools have proliferated rapidly over the past five years, but their uptake in doctoral education is poorly documented. This paper provides the first systematic survey of adoption across UK business schools and identifies institutional factors associated with higher uptake.
+
+## Methods
+
+A web-administered survey was sent to doctoral programme directors at all 28 AACSB-accredited UK business schools. The survey instrument was piloted with three programmes and refined based on cognitive interviews. The response rate was 89% ($n = 25$ usable responses).
+
+The dependent variable is the percentage of currently registered PhD candidates using a policy-compliant authoring tool (self-reported by programme directors).
+
+## Results
+
+Adoption rates ranged from 8% to 71% with a mean of 34%. Two institutional factors are associated with higher adoption:
+
+- **Institutional size**: a one-standard-deviation increase in cohort size is associated with a 6.2 percentage-point increase in adoption ($p < 0.05$).
+- **Dedicated methods training**: programmes with a formal research-methods sequence show 11.4 percentage-point higher adoption ($p < 0.01$).
+
+## Discussion
+
+The findings suggest that adoption is structurally enabled by institutional resources rather than driven by individual candidate preferences. This has implications for how universities can foster broader uptake.
+
+## Limitations
+
+The cross-sectional design precludes causal claims. Self-report by programme directors may overstate adoption rates if directors are unaware of which tools individual candidates use.

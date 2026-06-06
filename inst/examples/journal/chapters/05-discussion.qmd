@@ -1,0 +1,43 @@
+---
+title: "General Discussion"
+---
+
+This chapter synthesises across the three papers.
+
+## Synthesis of findings
+
+The three papers together establish a coherent picture:
+
+- **Paper 1** documents substantial cross-institutional variation in adoption and identifies institutional size and methods training as enablers.
+- **Paper 2** provides causal evidence that compliance enforcement improves writing quality at the chapter level.
+- **Paper 3** illuminates the meanings supervisors attach to tooling and identifies tensions around delegation, displacement, and authority.
+
+A common thread is that tooling is most effective when embedded in an institutional infrastructure that includes supervisor engagement. Pure technical deployment is insufficient.
+
+## Theoretical contribution
+
+The thesis advances the *adoption-as-infrastructure* perspective by treating policy-compliant authoring tools as components of a broader institutional ecology rather than as discrete artifacts adopted by individuals.
+
+## Practical implications
+
+Three practical recommendations follow:
+
+1. **Institutional**: methods-training programmes should integrate authoring-tool training as a first-class component.
+2. **Supervisory**: supervisor development should explicitly address the tensions identified in Paper 3.
+3. **Tool design**: compliance tools should expose, rather than hide, the structural decisions they enforce, mitigating the displacement concern.
+
+## Limitations across the papers
+
+The three papers share a UK business-school context. Replication in other national systems and disciplinary cultures is a priority for future work.
+
+## Future research agenda
+
+Three directions stand out:
+
+- A multi-country comparative study.
+- A longitudinal panel that tracks candidates from registration to submission.
+- A design experiment that tests alternative tool affordances against the supervisor concerns surfaced in Paper 3.
+
+## Closing remarks
+
+The findings reinforce an argument from @uom2026theses: the *infrastructure* of academic writing shapes the integrity of research outputs. As tooling continues to evolve, the boundary between writing and computation will continue to blur.

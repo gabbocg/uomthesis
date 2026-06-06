@@ -1,0 +1,29 @@
+---
+title: "Appendix A: Additional Material"
+---
+
+## A.1 Robustness checks
+
+The main regression in Chapter 4 was re-estimated under three robustness specifications. All within 0.05 standard deviations of the result in Table @tbl-results.
+
+## A.2 Callout boxes
+
+::: {.callout-note}
+## Methodological note
+
+The regression assumes the error term is uncorrelated with the regressors.
+:::
+
+::: {.callout-tip}
+## Practical tip
+
+Run `uomthesis::list_csl()` to see the bundled citation styles.
+:::
+
+## A.3 Mathematical derivations
+
+Let $\mathbf{X}$ be the $n \times k$ design matrix. The OLS estimator is:
+
+$$
+\hat{\boldsymbol{\beta}} = \left( \mathbf{X}^{\top} \mathbf{X} \right)^{-1} \mathbf{X}^{\top} \mathbf{y}
+$$

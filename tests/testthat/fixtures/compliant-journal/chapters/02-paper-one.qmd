@@ -1,4 +1,10 @@
-# Paper One Title {contribution="Briefly describe your contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author X advised on the statistical methods."}
+---
+title: "Paper One Title"
+---
+
+::: {.contribution}
+Briefly describe your contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author X advised on the statistical methods.
+:::
 
 ## Abstract
 

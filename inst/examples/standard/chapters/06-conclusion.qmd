@@ -1,0 +1,25 @@
+---
+title: "Conclusion"
+---
+
+## Summary of contributions
+
+1. **An analytical framework** integrating two literatures.
+2. **Empirical evidence** that adoption of compliant tooling is associated with improved submission quality.
+3. **Practical recommendations** for institutions.
+
+## Limitations
+
+The sample is restricted to three universities. The cross-sectional design precludes causal claims.
+
+## Future work
+
+Three directions stand out:
+
+- A multi-country replication.
+- A panel-data extension.
+- A qualitative study of supervisor experiences.
+
+## Closing remarks
+
+The findings reinforce an argument from @uom2026theses: that the *infrastructure* of academic writing shapes the integrity of research outputs.

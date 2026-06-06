@@ -714,7 +714,12 @@ rule_journal_contribution_stmts <- function() list(
       abs <- file.path(ctx$project_path, f)
       if (!file.exists(abs)) next
       lines <- readLines(abs, warn = FALSE, encoding = "UTF-8")
-      has <- any(grepl("(^|#\\|\\s*|\\{|\\s)contribution\\s*[:=]", lines))
+      # Match `contribution:` / `contribution=` (chunk option / attribute) or
+      # `{.contribution}` (Quarto Div class) — both are accepted styles.
+      has <- any(grepl(
+        "(\\{\\.contribution\\b|(^|#\\|\\s*|\\{|\\s)contribution\\s*[:=])",
+        lines
+      ))
       if (!has) missing <- c(missing, f)
     }
     if (length(missing) == 0) return(NULL)

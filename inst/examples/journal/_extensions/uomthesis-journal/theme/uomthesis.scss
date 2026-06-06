@@ -1,0 +1,24 @@
+/*-- scss:defaults --*/
+$primary: #5b1a8c;
+$body-color: #222;
+$body-bg: #fff;
+$link-color: $primary;
+$font-family-sans-serif: "Helvetica Neue", Helvetica, Arial, sans-serif;
+$line-height-base: 1.5;
+
+/*-- scss:rules --*/
+.title-page { text-align: center; padding-top: 4rem; }
+.title-page h1 { font-size: 2.4rem; margin-bottom: 2rem; }
+.declaration, .copyright-statement {
+  margin: 2rem 0;
+  padding: 1rem 1.25rem;
+  border-left: 3px solid $primary;
+  background: #faf6fd;
+}
+.contribution-statement {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid #888;
+  background: #f5f5f5;
+  font-size: 0.95em;
+}

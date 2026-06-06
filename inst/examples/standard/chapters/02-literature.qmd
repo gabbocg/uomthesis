@@ -1,0 +1,27 @@
+---
+title: "Literature Review"
+---
+
+This chapter surveys the prior literature in two strands and synthesises a research gap.
+
+## Strand A: organisational adoption of authoring tools
+
+The earliest empirical work on this topic appears in @cohen2013statistical, where the authors note:
+
+> The choice of authoring tool is not neutral; it shapes how researchers think about the structure of their argument, the role of evidence, and the relationship between writer and reader.
+>
+> --- @cohen2013statistical [p. 312]
+
+Subsequent work has extended this line in three directions:
+
+- **Empirical studies of tool adoption**
+- **Theoretical accounts of tool affordances**
+- **Design experiments testing new tools**
+
+## Strand B: the grammar of graphics
+
+A parallel literature, originating in @wilkinson2016grammar, formalises how visual representations encode statistical relationships.
+
+## Research gap
+
+The two strands have rarely been brought together. **This thesis addresses that gap** by treating authoring tools and visualisation tools as components of a single reproducibility ecosystem.
