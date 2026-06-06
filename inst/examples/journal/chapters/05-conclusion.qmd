@@ -12,4 +12,5 @@ Provide a brief summary of the overall contribution of the thesis.
 
 ## References {.unnumbered}
 
-Insert the references cited in this conclusion.
+::: {#refs}
+:::

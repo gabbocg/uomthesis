@@ -2,7 +2,7 @@
 % Please edit documentation in R/check_rules.R
 \name{rule_journal_rationale_present}
 \alias{rule_journal_rationale_present}
-\title{Rule: journal-format thesis must include a rationale partial}
+\title{Rule: journal-format thesis must include a rationale for the format choice}
 \usage{
 rule_journal_rationale_present()
 }
@@ -10,6 +10,9 @@ rule_journal_rationale_present()
 A rule spec list.
 }
 \description{
-Rule: journal-format thesis must include a rationale partial
+Policy section 13.10 mandates that journal-format theses include a
+rationale section. From v0.1 the rationale lives as a section in the
+introduction chapter (typically chapters/01-introduction.qmd) rather
+than as a separate partial. The rule checks both locations.
 }
 \keyword{internal}

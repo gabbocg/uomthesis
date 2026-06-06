@@ -18,6 +18,7 @@ create_thesis(
     "vancouver"),
   engine = c("lualatex", "xelatex", "pdflatex"),
   mainfont = "Times New Roman",
+  list_of_publications = NULL,
   force = FALSE,
   open = rlang::is_interactive()
 )
@@ -47,6 +48,12 @@ create_thesis(
 \item{engine}{\code{"lualatex"} | \code{"xelatex"} | \code{"pdflatex"}.}
 
 \item{mainfont}{One of the policy-allowed fonts.}
+
+\item{list_of_publications}{For journal format: if \code{TRUE} (default for
+journal), a \code{chapters/00-publications.qmd} page is scaffolded and listed
+in \verb{_quarto.yml}. Set to \code{FALSE} if you have no papers to list yet --
+the page is omitted from both the directory and the book chapters. Has
+no effect for \code{format = "standard"}.}
 
 \item{force}{If \code{TRUE}, allow \code{path} to exist as long as it is empty.}
 

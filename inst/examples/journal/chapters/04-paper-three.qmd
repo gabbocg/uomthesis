@@ -10,6 +10,10 @@ Briefly describe the candidate's contribution to this paper.
 
 State the publication status of the paper here.
 
+## Abstract
+
+Concise paper-style abstract.
+
 ## Introduction
 
 ## Literature review
@@ -24,8 +28,9 @@ State the publication status of the paper here.
 
 ## References {.unnumbered}
 
-Insert the references cited in this paper.
+::: {#refs}
+:::
 
-# Appendices {.appendix .unnumbered}
+## Appendices {.unnumbered}
 
-## 4.A Supplementary material
+### 4.A Supplementary material {.unnumbered}

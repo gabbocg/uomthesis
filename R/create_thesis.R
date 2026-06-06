@@ -19,6 +19,11 @@
 #' @param reference_style One of `list_csl()$name`.
 #' @param engine `"lualatex"` | `"xelatex"` | `"pdflatex"`.
 #' @param mainfont One of the policy-allowed fonts.
+#' @param list_of_publications For journal format: if `TRUE` (default for
+#'   journal), a `chapters/00-publications.qmd` page is scaffolded and listed
+#'   in `_quarto.yml`. Set to `FALSE` if you have no papers to list yet --
+#'   the page is omitted from both the directory and the book chapters. Has
+#'   no effect for `format = "standard"`.
 #' @param force If `TRUE`, allow `path` to exist as long as it is empty.
 #' @param open If `TRUE` and RStudio is available, open the new project.
 #' @return Invisible path to the created project.
@@ -38,6 +43,7 @@ create_thesis <- function(path,
                                               "vancouver"),
                           engine = c("lualatex", "xelatex", "pdflatex"),
                           mainfont = "Times New Roman",
+                          list_of_publications = NULL,
                           force = FALSE,
                           open = rlang::is_interactive()) {
   format          <- match.arg(format)
@@ -153,6 +159,23 @@ create_thesis <- function(path,
     mainfont        = mainfont,
     thesis_format   = format
   )
+
+  # Optional List of Publications page (journal format only). The default is
+  # to include it; the user can set list_of_publications = FALSE if they
+  # have no published or in-press papers yet.
+  if (is.null(list_of_publications)) {
+    list_of_publications <- (format == "journal")
+  }
+  if (format == "journal" && !isTRUE(list_of_publications)) {
+    pubs_file <- file.path(path, "chapters", "00-publications.qmd")
+    if (file.exists(pubs_file)) fs::file_delete(pubs_file)
+    qy_path <- file.path(path, "_quarto.yml")
+    if (file.exists(qy_path)) {
+      qy_lines <- readLines(qy_path, warn = FALSE)
+      qy_lines <- qy_lines[!grepl("00-publications.qmd", qy_lines)]
+      writeLines(qy_lines, qy_path)
+    }
+  }
 
   if (isTRUE(open) &&
       requireNamespace("rstudioapi", quietly = TRUE) &&

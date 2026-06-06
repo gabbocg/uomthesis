@@ -10,24 +10,95 @@ Briefly describe the candidate's contribution to this paper, e.g.: I designed th
 
 State the publication status of the paper here (e.g., *published in Journal Name, 2024*; *under review at Journal Name*; *in preparation*).
 
+## Abstract
+
+Concise paper-style abstract. State the question, methods, principal findings, and contribution in 150--250 words.
+
 ## Introduction
 
-## Background and related literature
-
-## Data
+Set up the research question. As @smith2024example show, the literature on this topic has grown rapidly. The position taken by @doe2020book is that ...; the present paper extends this by [your contribution]. See also @example2022chapter for a complementary perspective.
 
 ## Methodology
 
+The model is estimated by ordinary least squares. The estimating equation is:
+
+$$
+y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \varepsilon_i
+$$ {#eq-paper1-ols}
+
+where $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ are independent and identically distributed error terms. Equation @eq-paper1-ols is the workhorse specification.
+
+Inline mathematics works too --- for example, the t-statistic is $t = \hat{\beta} / \text{SE}(\hat{\beta})$.
+
+## Data
+
+The sample comprises $n = 240$ observations drawn from three sources. Descriptive statistics are reported in Table @tbl-paper1-desc.
+
+| Variable        |   Mean |    SD |    Min |    Max |
+|:----------------|-------:|------:|-------:|-------:|
+| Age             |   27.3 |   3.1 |     22 |     39 |
+| Programme year  |    2.4 |   1.0 |      1 |      4 |
+| Outcome score   |    4.8 |   1.2 |    1.5 |    6.9 |
+
+: Descriptive statistics of the sample. {#tbl-paper1-desc}
+
 ## Results
 
-## Robustness tests
+Figure @fig-paper1-dist shows the distribution of the outcome variable.
+
+```{r}
+#| label: fig-paper1-dist
+#| fig-cap: "Distribution of the outcome variable."
+#| fig-width: 5
+#| fig-height: 3.2
+#| echo: false
+set.seed(42)
+y <- rnorm(240, mean = 5, sd = 1.2)
+hist(y, breaks = 20, col = "#5b1a8c", border = "white",
+     main = "", xlab = "Outcome", ylab = "Frequency")
+```
+
+The estimated coefficients are reported in Table @tbl-paper1-est.
+
+| Coefficient | Estimate | Std. error | t-value |  p-value |
+|:------------|---------:|-----------:|--------:|---------:|
+| Intercept   |     4.92 |       0.15 |    32.8 | < 0.001  |
+| $x_1$       |     0.34 |       0.10 |     3.4 |   0.001  |
+| $x_2$       |    -0.18 |       0.10 |    -1.8 |   0.073  |
+
+: Estimated regression coefficients from the specification in Equation @eq-paper1-ols. {#tbl-paper1-est}
+
+The slope on $x_1$ is positive and significant at the 1% level.
+
+## Discussion
+
+Interpret the results. Discuss what the findings imply for theory and practice.
 
 ## Conclusions
 
+Summarise the contribution of this paper.
+
 ## References {.unnumbered}
 
-Insert the references cited in this paper.
+The bibliography below is auto-generated from `references.bib` and the citations used above.
 
-# Appendices {.appendix .unnumbered}
+::: {#refs}
+:::
 
-## 2.A Supplementary material
+## Appendices {.unnumbered}
+
+### 2.A Sample survey instrument {.unnumbered}
+
+Reproduce the survey instrument used to collect the primary data.
+
+### 2.B Robustness checks {.unnumbered}
+
+Document any robustness checks. Use sub-sub-sections for grouped material:
+
+#### 2.B.1 Excluding outliers {.unnumbered}
+
+Outlier exclusion does not change the headline result.
+
+#### 2.B.2 Bootstrap standard errors {.unnumbered}
+
+Bootstrap standard errors confirm the parametric inferences.

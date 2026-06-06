@@ -11,13 +11,11 @@ book:
     - chapters/00-declaration.qmd
     - chapters/00-copyright.qmd
     - chapters/00-acknowledgements.qmd
-    - part: "Main body"
-      chapters:
-        - chapters/01-introduction.qmd
-        - chapters/02-paper-one.qmd
-        - chapters/03-paper-two.qmd
-        - chapters/04-paper-three.qmd
-        - chapters/05-conclusion.qmd
+    - chapters/01-introduction.qmd
+    - chapters/02-paper-one.qmd
+    - chapters/03-paper-two.qmd
+    - chapters/04-paper-three.qmd
+    - chapters/05-conclusion.qmd
 
 format:
   uomthesis-journal-pdf: default

@@ -4,7 +4,7 @@ title: "Introduction"
 
 ## Research objectives and motivation
 
-State the motivation for the research and the overarching question(s) the thesis addresses.
+State the motivation for the research and the overarching question(s) the thesis addresses. As @smith2024example argue, the field has evolved rapidly; @doe2020book provides a useful textbook framing.
 
 ## Thesis overview
 
@@ -16,4 +16,5 @@ Summarise the structure of the remaining chapters.
 
 ## References {.unnumbered}
 
-Add the references cited in this introduction. Each paper chapter also carries its own References section at the end.
+::: {#refs}
+:::
