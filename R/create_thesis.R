@@ -427,7 +427,7 @@ substitute_skeleton <- function(path, title, author, degree, faculty, school,
     body <- readLines(f, warn = FALSE, encoding = "UTF-8")
     body <- gsub("{{title}}",           title,                             body, fixed = TRUE)
     body <- gsub("{{forename}}",        author$forename %||% "Forename",   body, fixed = TRUE)
-    body <- gsub("{{middle_initial}}",  author$middle_initial %||% "M",    body, fixed = TRUE)
+    body <- gsub("{{middle_initial}}",  author$middle_initial %||% "",     body, fixed = TRUE)
     body <- gsub("{{surname}}",         author$surname %||% "Surname",     body, fixed = TRUE)
     body <- gsub("{{native_name}}",     author$native_name %||% "",        body, fixed = TRUE)
     body <- gsub("{{degree_full}}",     degree_full,                       body, fixed = TRUE)
