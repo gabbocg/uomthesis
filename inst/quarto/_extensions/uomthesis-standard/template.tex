@@ -121,6 +121,12 @@ $uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
 $if(toc)$
 \setcounter{tocdepth}{$toc-depth$}
 \tableofcontents
+%% Policy section 8.1.d: word count of the main text, bottom-right of the
+%% contents page. Pulled from the index.qmd metadata field
+%% uomthesis.word_count; falls back to a placeholder until it is set.
+\vspace*{\fill}
+\noindent\hfill\textbf{Word count:} $if(uomthesis.word_count)$$uomthesis.word_count$$else$[Insert word count]$endif$
+\clearpage
 $endif$
 
 $if(lof)$\listoffigures$endif$

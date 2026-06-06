@@ -18,6 +18,11 @@ uomthesis:
 
   thesis_format: "{{thesis_format}}"
 
+  # Word count of the main text (policy section 8.1.d). Replace null with
+  # an integer once the thesis is feature-complete; until then the
+  # contents page prints "[Insert word count]" as a placeholder.
+  word_count: null
+
   declaration:
     variant: "either"
     joint_authorship_details: null
