@@ -27,6 +27,7 @@ contributes:
       filters:
         - filters/unnumber-prelims.lua
         - filters/contribution.lua
+        - filters/pagebreak-section.lua
       cite-method: citeproc
     html:
       theme: theme/uomthesis.scss

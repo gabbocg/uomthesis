@@ -109,8 +109,7 @@ in the Faculty of $uomthesis.faculty$
 
 $uomthesis.year$
 \vfill
-$uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$
-$if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif$\\[1ex]
+$uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$$if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif$\\
 $uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
 \end{titlepage}
 
