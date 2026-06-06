@@ -1,22 +1,21 @@
 -- unnumber-prelims.lua
 --
 -- Quarto book mode renders every chapter file as a numbered `\chapter{Title}`
--- in LaTeX even when the chapter YAML declares `unnumbered: true` -- the
--- per-chapter metadata doesn't reach Pandoc filters because Quarto assembles
--- the entire book into one Pandoc document.
+-- in LaTeX, even chapters with `unnumbered: true` in YAML. This filter walks
+-- the document AST and rewrites two cases:
 --
--- This filter walks the AST and rewrites any level-1 Header whose plain-text
--- content matches a known preliminary heading. The replacement is a raw
--- LaTeX block emitting `\chapter*{Title}` (no number) plus an explicit
--- `\addcontentsline{toc}{chapter}{Title}` so the entry still appears in
--- the table of contents -- without a number.
+-- 1. Headers whose title matches a known *unnumbered* preliminary heading
+--    (Abstract, Declaration of originality, Copyright statement,
+--    Acknowledgements, Dedication, etc.) become raw LaTeX
+--    `\chapter*{Title}` plus an explicit `\addcontentsline{toc}{chapter}{Title}`
+--    so the entry still appears in the table of contents without a number.
 --
--- It also handles the case where the chapter title comes through as a
--- RawBlock containing `\chapter{Title}` (some Quarto/Pandoc pipelines emit
--- that form directly), by performing a string substitution.
+-- 2. Headers whose title matches a *suppressed* heading ("Preface", from
+--    the Quarto-mandatory `index.qmd` home page that only exists to hold
+--    project metadata) are removed entirely. The chapter heading does not
+--    appear in the body or in the TOC.
 
-local prelim_titles = {
-  ["Preface"]                    = true,
+local unnumber_titles = {
   ["List of publications"]       = true,
   ["List of Publications"]       = true,
   ["Abstract"]                   = true,
@@ -31,23 +30,27 @@ local prelim_titles = {
   ["Lay Abstract"]               = true,
 }
 
+local suppress_titles = {
+  ["Preface"] = true,
+}
+
 local function escape_lua_pattern(s)
   return (s:gsub("([().%+%-%*%?%[%]%^%$])", "%%%1"))
-end
-
-local function is_prelim_title(t)
-  return prelim_titles[t] == true
 end
 
 function Header(el)
   if FORMAT ~= 'latex' and not FORMAT:match('latex') then return nil end
   if el.level ~= 1 then return nil end
   local txt = pandoc.utils.stringify(el.content)
-  if not is_prelim_title(txt) then return nil end
-  -- Replace this Header with a raw LaTeX `\chapter*{}` plus a TOC entry.
-  return pandoc.RawBlock('latex',
-    "\\chapter*{" .. txt .. "}\n" ..
-    "\\addcontentsline{toc}{chapter}{" .. txt .. "}")
+  if suppress_titles[txt] then
+    -- Drop the chapter heading entirely.
+    return {}
+  end
+  if unnumber_titles[txt] then
+    return pandoc.RawBlock('latex',
+      "\\chapter*{" .. txt .. "}\n" ..
+      "\\addcontentsline{toc}{chapter}{" .. txt .. "}")
+  end
 end
 
 function RawBlock(el)
@@ -55,7 +58,17 @@ function RawBlock(el)
   if el.format ~= 'tex' and el.format ~= 'latex' then return nil end
   local new_text = el.text
   local changed = false
-  for title, _ in pairs(prelim_titles) do
+  -- Suppression: drop `\chapter{Preface}` (and any line containing it).
+  for title, _ in pairs(suppress_titles) do
+    local pattern = "\\chapter%{" .. escape_lua_pattern(title) .. "%}"
+    local stripped, n = new_text:gsub(pattern, "")
+    if n > 0 then
+      new_text = stripped
+      changed = true
+    end
+  end
+  -- Unnumbering: rewrite known prelim chapter commands.
+  for title, _ in pairs(unnumber_titles) do
     local pattern = "\\chapter%{" .. escape_lua_pattern(title) .. "%}"
     local replacement = "\\chapter*{" .. title .. "}\n" ..
                         "\\addcontentsline{toc}{chapter}{" .. title .. "}"

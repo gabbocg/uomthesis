@@ -50,5 +50,3 @@ linestretch: 1.5
 pdf-engine: lualatex
 lang: en-GB
 ---
-
-This page exists only to hold project metadata for Quarto.

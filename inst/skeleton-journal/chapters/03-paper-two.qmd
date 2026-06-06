@@ -10,9 +10,12 @@ Briefly describe the candidate's contribution to this paper.
 
 State the publication status of the paper here.
 
-## Abstract
+## Abstract {.unnumbered}
 
-Concise paper-style abstract.
+\begin{quote}
+\itshape
+State the question, methods, principal findings, and contribution in 150--250 words.
+\end{quote}
 
 ## Introduction
 

@@ -10,13 +10,16 @@ Briefly describe the candidate's contribution to this paper, e.g.: I designed th
 
 State the publication status of the paper here (e.g., *published in Journal Name, 2024*; *under review at Journal Name*; *in preparation*).
 
-## Abstract
+## Abstract {.unnumbered}
 
-Concise paper-style abstract. State the question, methods, principal findings, and contribution in 150--250 words.
+\begin{quote}
+\itshape
+State the question, methods, principal findings, and contribution in 150--250 words. The abstract is rendered in italic and indented to match the conventional layout of a paper-format abstract.
+\end{quote}
 
 ## Introduction
 
-Set up the research question. As @smith2024example show, the literature on this topic has grown rapidly. The position taken by @doe2020book is that ...; the present paper extends this by [your contribution]. See also @example2022chapter for a complementary perspective.
+Set up the research question. The literature on this topic has grown rapidly [@smith2024example]. A textbook framing is provided by [@example2020book]; the present paper extends this by [your contribution]. A complementary perspective is offered by [@example2022chapter].
 
 ## Methodology
 
@@ -28,7 +31,7 @@ $$ {#eq-paper1-ols}
 
 where $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ are independent and identically distributed error terms. Equation @eq-paper1-ols is the workhorse specification.
 
-Inline mathematics works too --- for example, the t-statistic is $t = \hat{\beta} / \text{SE}(\hat{\beta})$.
+Inline mathematics also work --- for example, the t-statistic is $t = \hat{\beta} / \text{SE}(\hat{\beta})$.
 
 ## Data
 
@@ -68,11 +71,11 @@ The estimated coefficients are reported in Table @tbl-paper1-est.
 
 : Estimated regression coefficients from the specification in Equation @eq-paper1-ols. {#tbl-paper1-est}
 
-The slope on $x_1$ is positive and significant at the 1% level.
+The slope on $x_1$ is positive and significant at the 1% level [@smith2024example].
 
 ## Discussion
 
-Interpret the results. Discuss what the findings imply for theory and practice.
+Interpret the results. Discuss what the findings imply for theory and practice [@example2023conf].
 
 ## Conclusions
 
