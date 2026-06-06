@@ -1,17 +1,28 @@
+# macOS
+.DS_Store
+
+# R
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
-.DS_Store
-.claude
 *.Rcheck/
 *.tar.gz
-doc/
-Meta/
+*.Rproj
+
+# Package build
+/doc/
+/Meta/
+/inst/doc/
+
+# Quarto build artifacts
 _book/
 _freeze/
 .quarto/
-/inst/doc
-*.Rproj
+
+# pkgdown site / rendered README
 /site/
 README.html
+
+# Claude Code per-project state
+.claude
