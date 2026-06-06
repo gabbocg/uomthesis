@@ -1,9 +1,7 @@
+# uomthesis <img src="man/figures/logo.png" align="right" height="138" />
 
-<!-- README.md is generated from README.Rmd. Edit only README.Rmd. -->
-
-# uomthesis
-
-**Author:** [Gabriel Cabrera](https://github.com/gabbocg)<br> **License:** [MIT](https://opensource.org/licenses/MIT) + file [LICENSE](LICENSE)
+**Author:** [Gabriel Cabrera](https://github.com/gabbocg)<br>
+**License:** [MIT](https://opensource.org/licenses/MIT) + file [LICENSE](LICENSE)
 
 <!-- badges: start -->
 
@@ -180,9 +178,9 @@ The full reference is also available at the [pkgdown site](https://gabbocg.githu
 
 ## Getting help
 
-If you encounter a bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/gabbocg/uomthesis/issues). For questions, email <gabriel.cabrera.guz@gmail.com>.
+If you encounter a bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/gabbocg/uomthesis/issues). For questions, email <gabriel.cabreraguzman@postgrad.manchester.ac.uk>.
 
 ## References
 
-- The University of Manchester. *Presentation of Theses Policy*. Version 12, March 2026. <https://documents.manchester.ac.uk/display.aspx?DocID=7420>.
+- The University of Manchester. *Presentation of Theses Policy*. Version 12, March 2026.
 - The University of Manchester. *Journal Format Theses: Guiding Principles*. Faculty of Humanities.
