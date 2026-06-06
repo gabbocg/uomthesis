@@ -3,24 +3,3 @@
 
 % UTF-8 input encoding
 \usepackage[utf8]{inputenc}
-
-% Coloured hyperlinks (overrides the template's earlier
-% \hypersetup{hidelinks}). xcolor is pulled in automatically by hyperref
-% when colorlinks=true, so `red`, `blue` and `magenta` are available
-% without an extra \usepackage.
-%   * citations (author-year link in body + entries in references list) blue
-%   * URLs and external file links                                       magenta
-%   * other internal links (sections, figures, tables, footnotes)        blue
-%   * equation cross-references (\eqref, Quarto's @eq-...)               red
-\hypersetup{
-  colorlinks = true,
-  citecolor  = blue,
-  linkcolor  = blue,
-  urlcolor   = magenta,
-  filecolor  = magenta
-}
-% \eqref's hyperlink is rendered inside \ref, which picks up linkcolor.
-% Wrap each \eqref call in a group that locally swaps linkcolor to red,
-% so equation refs stand out while all other internal refs stay blue.
-\let\OldEqref\eqref
-\renewcommand{\eqref}[1]{\begingroup\hypersetup{linkcolor=red}\OldEqref{#1}\endgroup}

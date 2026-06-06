@@ -34,7 +34,22 @@ $if(linestretch)$\setstretch{$linestretch$}$endif$
 
 \usepackage{graphicx}
 \usepackage{hyperref}
-\hypersetup{hidelinks}
+%% Coloured hyperlinks driven by `uomthesis.hyperlink.*` metadata in
+%% index.qmd. xcolor is pulled in by hyperref when colorlinks=true, so
+%% any named xcolor colour (`blue`, `red`, `magenta`, `teal`,
+%% `Maroon`, ...) is valid. To change, edit index.qmd; defaults shown
+%% below are applied when the metadata field is null or absent.
+\hypersetup{
+  colorlinks = true,
+  citecolor  = $if(uomthesis.hyperlink.cite)$$uomthesis.hyperlink.cite$$else$blue$endif$,
+  linkcolor  = $if(uomthesis.hyperlink.link)$$uomthesis.hyperlink.link$$else$blue$endif$,
+  urlcolor   = $if(uomthesis.hyperlink.url)$$uomthesis.hyperlink.url$$else$magenta$endif$,
+  filecolor  = $if(uomthesis.hyperlink.file)$$uomthesis.hyperlink.file$$else$magenta$endif$
+}
+%% Equation refs (\eqref, Quarto's @eq-...) flip to their own colour
+%% inside a group so other internal refs keep the linkcolor above.
+\let\OldEqref\eqref
+\renewcommand{\eqref}[1]{\begingroup\hypersetup{linkcolor=$if(uomthesis.hyperlink.equation)$$uomthesis.hyperlink.equation$$else$red$endif$}\OldEqref{#1}\endgroup}
 
 % Maths
 \usepackage{amsmath}

@@ -23,6 +23,16 @@ uomthesis:
   # contents page prints "[Insert word count]" as a placeholder.
   word_count: null
 
+  # Hyperlink colours in the PDF. Any named xcolor colour is valid
+  # (e.g. blue, red, magenta, teal, Maroon) or `null` to keep the
+  # default shown after the comment.
+  hyperlink:
+    cite:     "blue"      # author-year citation links + references list
+    link:     "blue"      # section / figure / table / footnote refs
+    url:      "magenta"   # external URLs (\url, \href)
+    file:     "magenta"   # file:// links
+    equation: "red"       # equation refs (\eqref, Quarto's @eq-...)
+
   declaration:
     variant: "either"
     joint_authorship_details: null
