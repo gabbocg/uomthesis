@@ -31,9 +31,31 @@ jobs:
           extra-packages: any::devtools, any::pdftools, any::quarto, local::.
           needs: check
 
-      - name: Render the compliant standard-format fixture
+      - name: Scaffold a fresh example thesis with create_thesis()
+        # We deliberately do NOT render the test fixture under
+        # tests/testthat/fixtures/ok-std -- that fixture is stripped
+        # for static-analysis purposes (CSL file removed, csl: set to
+        # the bundled name) and won't render with pandoc. Instead
+        # scaffold a fresh, complete project so we exercise the same
+        # code path a user would.
+        shell: Rscript {0}
         run: |
-          cd tests/testthat/fixtures/ok-std
+          library(uomthesis)
+          create_thesis(
+            path     = "example-thesis",
+            format   = "standard",
+            degree   = "PhD",
+            division = "MSM",
+            author   = list(forename = "Jane", middle_initial = "Q",
+                            surname = "Doe"),
+            title    = "Compliance fixture (standard)",
+            year     = 2027,
+            open     = FALSE
+          )
+
+      - name: Render the example thesis
+        run: |
+          cd example-thesis
           quarto render --to uomthesis-standard-pdf
 
       - name: Run source-phase compliance check on the rendered project
@@ -41,7 +63,7 @@ jobs:
         run: |
           library(uomthesis)
           res <- check_thesis(
-            project = "tests/testthat/fixtures/ok-std",
+            project = "example-thesis",
             fail_on = "error"
           )
           stopifnot(res$ok)
@@ -52,5 +74,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: example-thesis-pdf
-          path: tests/testthat/fixtures/ok-std/_book/*.pdf
+          path: example-thesis/_book/*.pdf
           if-no-files-found: warn
