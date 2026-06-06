@@ -11,9 +11,9 @@ Provides a Quarto template (standard and journal formats), a project scaffolder,
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/gabriel-cabrera-guz/uomthesis}
-  \item \url{https://gabriel-cabrera-guz.github.io/uomthesis}
-  \item Report bugs at \url{https://github.com/gabriel-cabrera-guz/uomthesis/issues}
+  \item \url{https://github.com/gabbocg/uomthesis}
+  \item \url{https://gabbocg.github.io/uomthesis}
+  \item Report bugs at \url{https://github.com/gabbocg/uomthesis/issues}
 }
 
 }
