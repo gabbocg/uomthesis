@@ -21,6 +21,7 @@ _freeze/
 .quarto/
 
 # pkgdown site / rendered README
+/docs/
 /site/
 README.html
 
