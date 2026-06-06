@@ -13,7 +13,15 @@ State the question, methods, principal findings, and contribution in 150--250 wo
 
 ## Introduction
 
-Set up the research question. The literature on this topic has grown rapidly [@smith2024example]. A textbook framing is provided by [@example2020book]; the present paper extends this by [your contribution]. A complementary perspective is offered by [@example2022chapter].
+Set up the research question. Pandoc-style citation keys render as hyperlinked author-year markers that resolve against `references.bib`. The available forms are:
+
+* Parenthetical:   the literature has grown rapidly [@smith2024example].
+* In-text:         @smith2024example argues that this trend is recent.
+* Multiple keys:   recent work develops this view [@smith2024example; @example2022chapter; @example2023conf].
+* With a locator:  the formal derivation is set out in [@example2020book, pp. 112--115].
+* Year only:       a complementary perspective appears in the same volume [-@example2020book].
+
+Each key (e.g. `@smith2024example`) is a clickable hyperlink that jumps to the matching entry in the References list at the end of the chapter. Citation links are rendered in blue; URLs in any reference entry are rendered in magenta.
 
 ## Methodology
 
@@ -23,13 +31,13 @@ $$
 y_i = \beta_0 + \beta_1 x_{1i} + \beta_2 x_{2i} + \varepsilon_i
 $$ {#eq-paper1-ols}
 
-where $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ are independent and identically distributed error terms. Equation @eq-paper1-ols is the workhorse specification.
+where $\varepsilon_i \sim \mathcal{N}(0, \sigma^2)$ are independent and identically distributed error terms. @eq-paper1-ols is the workhorse specification.
 
 Inline mathematics also work --- for example, the t-statistic is $t = \hat{\beta} / \text{SE}(\hat{\beta})$.
 
 ## Data
 
-The sample comprises $n = 240$ observations drawn from three sources. Descriptive statistics are reported in Table @tbl-paper1-desc.
+The sample comprises $n = 240$ observations drawn from three sources. Descriptive statistics are reported in @tbl-paper1-desc.
 
 | Variable        |   Mean |    SD |    Min |    Max |
 |:----------------|-------:|------:|-------:|-------:|
@@ -41,7 +49,7 @@ The sample comprises $n = 240$ observations drawn from three sources. Descriptiv
 
 ## Results
 
-Figure @fig-paper1-dist shows the distribution of the outcome variable.
+@fig-paper1-dist shows the distribution of the outcome variable.
 
 ```{r}
 #| label: fig-paper1-dist
@@ -55,7 +63,7 @@ hist(y, breaks = 20, col = "#5b1a8c", border = "white",
      main = "", xlab = "Outcome", ylab = "Frequency")
 ```
 
-The estimated coefficients are reported in Table @tbl-paper1-est.
+The estimated coefficients are reported in @tbl-paper1-est.
 
 | Coefficient | Estimate | Std. error | t-value |  p-value |
 |:------------|---------:|-----------:|--------:|---------:|
@@ -63,7 +71,7 @@ The estimated coefficients are reported in Table @tbl-paper1-est.
 | $x_1$       |     0.34 |       0.10 |     3.4 |   0.001  |
 | $x_2$       |    -0.18 |       0.10 |    -1.8 |   0.073  |
 
-: Estimated regression coefficients from the specification in Equation @eq-paper1-ols. {#tbl-paper1-est}
+: Estimated regression coefficients from the specification in @eq-paper1-ols. {#tbl-paper1-est}
 
 The slope on $x_1$ is positive and significant at the 1% level [@smith2024example].
 
