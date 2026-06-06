@@ -33,7 +33,7 @@ jobs:
 
       - name: Render the compliant standard-format fixture
         run: |
-          cd tests/testthat/fixtures/ok-standard
+          cd tests/testthat/fixtures/ok-std
           quarto render --to uomthesis-standard-pdf
 
       - name: Run source-phase compliance check on the rendered project
@@ -41,7 +41,7 @@ jobs:
         run: |
           library(uomthesis)
           res <- check_thesis(
-            project = "tests/testthat/fixtures/ok-standard",
+            project = "tests/testthat/fixtures/ok-std",
             fail_on = "error"
           )
           stopifnot(res$ok)
@@ -52,5 +52,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: example-thesis-pdf
-          path: tests/testthat/fixtures/ok-standard/_book/*.pdf
+          path: tests/testthat/fixtures/ok-std/_book/*.pdf
           if-no-files-found: warn
