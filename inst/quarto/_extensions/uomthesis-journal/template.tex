@@ -73,9 +73,15 @@ $if(linestretch)$\setstretch{$linestretch$}$endif$
 \providecommand{\pandocbounded}[1]{#1}
 \providecommand{\real}[1]{#1}
 
-% Pandoc citeproc helpers
+% Pandoc citeproc helpers. \makeatletter/\makeatother is required so
+% that \hyper@@link (which contains @ characters) is tokenised as a
+% single control sequence; without it the @s would be catcode "other"
+% and the macro expansion would fail at use-time with
+% "Undefined control sequence \hyper".
+\makeatletter
 \providecommand{\citeproctext}{}
 \providecommand{\citeproc}[2]{\hyper@@link[cite]{}{ref-#1}{#2}\nocite{#1}}
+\makeatother
 
 % Pandoc CSL helper macros. The `list` environment is configured to
 % (i) suppress the empty `[]` label that author-date CSL styles leave at
