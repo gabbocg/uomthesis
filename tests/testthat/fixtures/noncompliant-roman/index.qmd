@@ -10,6 +10,7 @@ uomthesis:
     native_name: ""
 
   degree: "PhD"
+  degree_full: "Doctor of Philosophy"
   faculty: "Humanities"
   school: "Alliance Manchester Business School"
   division: "MSM"

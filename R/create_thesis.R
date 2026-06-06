@@ -190,12 +190,30 @@ create_thesis <- function(path,
   invisible(path)
 }
 
+# Map abbreviated degree codes to the full degree name that conventionally
+# appears on the title page (per the Presentation of Theses Policy section
+# 8.1.b "the full title of the degree should be stated not the abbreviated
+# form").
+degree_full_name <- function(degree) {
+  switch(degree,
+    "PhD"                    = "Doctor of Philosophy",
+    "MPhil"                  = "Master of Philosophy",
+    "DBA"                    = "Doctor of Business Administration",
+    "MD"                     = "Doctor of Medicine",
+    "EngD"                   = "Doctor of Engineering",
+    "PhD by Enterprise"      = "Doctor of Philosophy by Enterprise",
+    "Professional Doctorate" = "Professional Doctorate",
+    degree
+  )
+}
+
 # Internal: substitute placeholders in scaffolded index.qmd + _quarto.yml.
 # Uses fixed (literal) string substitution to avoid regex surprises.
 substitute_skeleton <- function(path, title, author, degree, faculty, school,
                                 division, year, reference_style, engine,
                                 mainfont, thesis_format) {
   files <- c(file.path(path, "index.qmd"), file.path(path, "_quarto.yml"))
+  degree_full <- degree_full_name(degree)
   for (f in files) {
     if (!file.exists(f)) next
     body <- readLines(f, warn = FALSE, encoding = "UTF-8")
@@ -204,6 +222,7 @@ substitute_skeleton <- function(path, title, author, degree, faculty, school,
     body <- gsub("{{middle_initial}}",  author$middle_initial %||% "M",    body, fixed = TRUE)
     body <- gsub("{{surname}}",         author$surname %||% "Surname",     body, fixed = TRUE)
     body <- gsub("{{native_name}}",     author$native_name %||% "",        body, fixed = TRUE)
+    body <- gsub("{{degree_full}}",     degree_full,                       body, fixed = TRUE)
     body <- gsub("{{degree}}",          degree,                            body, fixed = TRUE)
     body <- gsub("{{faculty}}",         faculty,                           body, fixed = TRUE)
     body <- gsub("{{school}}",          school,                            body, fixed = TRUE)

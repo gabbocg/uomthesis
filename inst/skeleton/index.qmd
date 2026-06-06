@@ -10,6 +10,7 @@ uomthesis:
     native_name: "{{native_name}}"
 
   degree: "{{degree}}"
+  degree_full: "{{degree_full}}"
   faculty: "{{faculty}}"
   school: "{{school}}"
   division: "{{division}}"
