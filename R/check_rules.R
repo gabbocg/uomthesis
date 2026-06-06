@@ -819,8 +819,13 @@ rule_registry <- function() {
     rule_abstract_one_page(),
     rule_csl_bundled_or_path_exists(),
     rule_bibliography_exists(),
-    rule_journal_rationale_present(),
-    rule_journal_contribution_stmts()
+    rule_journal_rationale_present()
+    # `rule_journal_contribution_stmts()` is deliberately not registered.
+    # Policy section 13.3 requires that the candidate's contribution be made
+    # explicitly clear *somewhere* in a journal-format thesis, but does not
+    # mandate a per-chapter declaration. Many real AMBS theses leave the
+    # contribution statement out of the constituent paper chapters and let
+    # the title page / List of publications / general introduction carry it.
   )
 }
 

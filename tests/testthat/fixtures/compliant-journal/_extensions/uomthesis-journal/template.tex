@@ -58,22 +58,28 @@ $if(linestretch)$\setstretch{$linestretch$}$endif$
 \providecommand{\citeproctext}{}
 \providecommand{\citeproc}[2]{\hyper@@link[cite]{}{ref-#1}{#2}\nocite{#1}}
 
-% Pandoc CSL helper macros
+% Pandoc CSL helper macros. The `list` environment is configured to
+% (i) suppress the empty `[]` label that author-date CSL styles leave at
+% the start of each entry, and (ii) tighten inter-entry spacing.
 \usepackage{calc}
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.5em}
 \newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
+\setlength{\csllabelwidth}{0pt}
 \newenvironment{CSLReferences}[2]
  {\begin{list}{}{%
-  \setlength{\itemindent}{0pt}
-  \setlength{\leftmargin}{0pt}
-  \setlength{\parsep}{0pt}
+  \setlength{\labelwidth}{0pt}%
+  \setlength{\labelsep}{0pt}%
+  \setlength{\itemindent}{0pt}%
+  \setlength{\leftmargin}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\topsep}{0pt}%
   \ifodd #1
-   \setlength{\leftmargin}{\cslhangindent}
-   \setlength{\itemindent}{-1\cslhangindent}
+   \setlength{\leftmargin}{\cslhangindent}%
+   \setlength{\itemindent}{-1\cslhangindent}%
   \fi
-  \setlength{\itemsep}{#2\baselineskip}}}
+  \setlength{\itemsep}{0.25\baselineskip}%
+  \renewcommand{\makelabel}[1]{}}}
  {\end{list}}
 \newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
 \newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}

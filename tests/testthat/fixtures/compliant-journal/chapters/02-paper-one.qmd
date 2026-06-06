@@ -2,15 +2,9 @@
 title: "Title of the first paper"
 ---
 
-## Preface {.unnumbered}
-
-::: {.contribution}
-Briefly describe the candidate's contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author A advised on the methodology.
-:::
-
-State the publication status of the paper here (e.g., *published in Journal Name, 2024*; *under review at Journal Name*; *in preparation*).
-
-## Abstract {.unnumbered}
+\begin{center}
+\textbf{Abstract}
+\end{center}
 
 \begin{quote}
 \itshape
@@ -82,8 +76,6 @@ Interpret the results. Discuss what the findings imply for theory and practice [
 Summarise the contribution of this paper.
 
 ## References {.unnumbered}
-
-The bibliography below is auto-generated from `references.bib` and the citations used above.
 
 ::: {#refs}
 :::

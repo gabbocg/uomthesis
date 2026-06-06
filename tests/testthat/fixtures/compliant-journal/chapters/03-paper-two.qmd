@@ -2,15 +2,9 @@
 title: "Title of the second paper"
 ---
 
-## Preface {.unnumbered}
-
-::: {.contribution}
-Briefly describe the candidate's contribution to this paper.
-:::
-
-State the publication status of the paper here.
-
-## Abstract {.unnumbered}
+\begin{center}
+\textbf{Abstract}
+\end{center}
 
 \begin{quote}
 \itshape

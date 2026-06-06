@@ -595,9 +595,10 @@ test_that("copyright-author-match returns NULL when candidate metadata is absent
   expect_null(rule$check(ctx))
 })
 
-# rule_registry now has 19 rules (17 from Phase 5D + 2 from Phase 5E)
-test_that("rule_registry returns exactly 19 rules", {
-  expect_equal(length(rule_registry()), 19L)
+# rule_registry has 18 rules after journal-contribution-stmts was removed
+# (17 from Phase 5D + 1 from Phase 5E).
+test_that("rule_registry returns exactly 18 rules", {
+  expect_equal(length(rule_registry()), 18L)
 })
 
 # ---------------------------------------------------------------------------
@@ -845,82 +846,13 @@ test_that("journal-rationale-present passes when rationale.tex has substantive c
 })
 
 # 5.E.2 — journal-contribution-stmts
+#
+# This rule was intentionally removed from the registry; policy section 13.3
+# requires the candidate's contribution to be made explicit *somewhere* in
+# a journal-format thesis but does not mandate a per-chapter declaration.
+# Tests for it have been removed alongside the registry entry.
 
-test_that("journal-contribution-stmts returns NULL when no body chapters exist", {
-  # Only index.qmd in chapters — no body chapter files
-  root <- make_mock_project(thesis_format = "journal")
-  rule <- get_rule("journal-contribution-stmts")
-  ctx  <- build_ctx(root)
-  expect_null(rule$check(ctx))
-})
-
-test_that("journal-contribution-stmts fires when a body chapter has no contribution marker", {
-  root <- make_mock_project(
-    thesis_format = "journal",
-    chapters = c("index.qmd", "01-paper.qmd"),
-    qmd_files = list(
-      "01-paper.qmd" = c("---", "title: Paper One", "---", "No contribution marker here.")
-    )
-  )
-  rule <- get_rule("journal-contribution-stmts")
-  ctx  <- build_ctx(root)
-  result <- rule$check(ctx)
-  expect_false(is.null(result))
-  expect_equal(result$rule_id, "journal-contribution-stmts")
-  expect_equal(result$severity, "warning")
-  expect_match(result$message, "01-paper.qmd")
-})
-
-test_that("journal-contribution-stmts passes when body chapter has chunk-option contribution marker", {
-  root <- make_mock_project(
-    thesis_format = "journal",
-    chapters = c("index.qmd", "01-paper.qmd"),
-    qmd_files = list(
-      "01-paper.qmd" = c(
-        "---", "title: Paper One", "---",
-        "```{r}",
-        "#| contribution: \"I wrote 80% of this paper.\"",
-        "1 + 1",
-        "```"
-      )
-    )
-  )
-  rule <- get_rule("journal-contribution-stmts")
-  ctx  <- build_ctx(root)
-  expect_null(rule$check(ctx))
-})
-
-test_that("journal-contribution-stmts passes when body chapter has heading-attribute contribution marker", {
-  root <- make_mock_project(
-    thesis_format = "journal",
-    chapters = c("index.qmd", "01-paper.qmd"),
-    qmd_files = list(
-      "01-paper.qmd" = c(
-        "---", "title: Paper One", "---",
-        "# Paper Title {contribution=\"Lead author, experimental design and analysis.\"}"
-      )
-    )
-  )
-  rule <- get_rule("journal-contribution-stmts")
-  ctx  <- build_ctx(root)
-  expect_null(rule$check(ctx))
-})
-
-test_that("journal-contribution-stmts passes when body chapter has YAML contribution key", {
-  root <- make_mock_project(
-    thesis_format = "journal",
-    chapters = c("index.qmd", "01-paper.qmd"),
-    qmd_files = list(
-      "01-paper.qmd" = c(
-        "---",
-        "title: Paper One",
-        "contribution: \"I conducted all experiments and wrote the manuscript.\"",
-        "---",
-        "Body text."
-      )
-    )
-  )
-  rule <- get_rule("journal-contribution-stmts")
-  ctx  <- build_ctx(root)
-  expect_null(rule$check(ctx))
+test_that("journal-contribution-stmts is no longer a registered rule", {
+  expect_error(get_rule("journal-contribution-stmts"),
+               class = "uomthesis_unknown_rule")
 })
