@@ -7,13 +7,19 @@
 ## Overview
 
 **uomthesis** is an R package for writing a University of Manchester
-AMBS PhD thesis in Quarto.
+AMBS PhD thesis in Quarto. It encodes the *Presentation of Theses
+Policy* so a candidate can write in `.qmd`, render a policy-compliant
+PDF and HTML, and verify that the document still meets submission
+requirements.
 [`create_thesis()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/create_thesis.md)
-scaffolds a policy-compliant book project.
+scaffolds a Quarto book project as a `standard` monograph or a
+`journal`-format thesis with 1 to 10 constituent papers.
 [`check_thesis()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/check_thesis.md)
-runs 18 source-phase rules.
+runs 18 source-phase compliance rules and reports findings.
 [`word_count()`](https://gabriel-cabrera-guz.github.io/uomthesis/reference/word_count.md)
-checks the main text against the policy cap.
+counts the main text against the applicable cap. Five citation styles
+ship bundled (Harvard-Manchester, APA, Chicago author-date, MHRA,
+Vancouver).
 
 ## Installation
 
