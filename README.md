@@ -3,35 +3,15 @@
 
 # uomthesis
 
-**Author:** [Gabriel Cabrera](https://github.com/gabbocg)<br>
-**License:** [MIT](https://opensource.org/licenses/MIT) + file
-[LICENSE](LICENSE)
+**Author:** [Gabriel Cabrera](https://github.com/gabbocg)<br> **License:** [MIT](https://opensource.org/licenses/MIT) + file [LICENSE](LICENSE)
 
 <!-- badges: start -->
 
-[![License:
-MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![R-CMD-check](https://github.com/gabbocg/uomthesis/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gabbocg/uomthesis/actions/workflows/R-CMD-check.yaml)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![pkgdown](https://github.com/gabbocg/uomthesis/actions/workflows/pkgdown.yaml/badge.svg)](https://gabbocg.github.io/uomthesis/)
-<!-- badges: end -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![R-CMD-check](https://github.com/gabbocg/uomthesis/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/gabbocg/uomthesis/actions/workflows/R-CMD-check.yaml) [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental) [![pkgdown](https://github.com/gabbocg/uomthesis/actions/workflows/pkgdown.yaml/badge.svg)](https://gabbocg.github.io/uomthesis/) <!-- badges: end -->
 
 ## Overview
 
-**uomthesis** is an R package that ships a Quarto template and a
-compliance validator for PhD theses submitted to Alliance Manchester
-Business School (AMBS) in the Faculty of Humanities at The University of
-Manchester. `create_thesis()` scaffolds a policy-compliant Quarto book
-project in either a monograph (`standard`) or journal-format (`journal`,
-1–10 constituent papers) layout, with margins, font, line spacing,
-declaration, copyright statement, and preliminary page order baked in
-per the *Presentation of Theses Policy*. `check_thesis()` runs 18
-source-phase rules against the project and reports findings as console,
-markdown, or JSON. `word_count()` counts the main text per the policy
-definition (section 4.6 fn. 1) and checks it against the applicable cap.
-Five citation styles ship bundled (Harvard-Manchester, APA, Chicago
-author-date, MHRA, Vancouver), pinned by sha256.
+**uomthesis** is an R package that ships a Quarto template and a compliance validator for PhD theses submitted to Alliance Manchester Business School (AMBS) in the Faculty of Humanities at The University of Manchester. `create_thesis()` scaffolds a policy-compliant Quarto book project in either a monograph (`standard`) or journal-format (`journal`, 1–10 constituent papers) layout, with margins, font, line spacing, declaration, copyright statement, and preliminary page order baked in per the *Presentation of Theses Policy*. `check_thesis()` runs 18 source-phase rules against the project and reports findings as console, markdown, or JSON. `word_count()` counts the main text per the policy definition (section 4.6 fn. 1) and checks it against the applicable cap. Five citation styles ship bundled (Harvard-Manchester, APA, Chicago author-date, MHRA, Vancouver), pinned by sha256.
 
 ## Installation
 
@@ -44,9 +24,7 @@ devtools::install_github("gabbocg/uomthesis")
 You will also need:
 
 - **Quarto** (\>= 1.5)
-- **A LaTeX engine** – LuaLaTeX recommended. If you don’t have one,
-  install [TinyTeX](https://yihui.org/tinytex/) via
-  `quarto install tinytex`.
+- **A LaTeX engine** – LuaLaTeX recommended. If you don’t have one, install [TinyTeX](https://yihui.org/tinytex/) via `quarto install tinytex`.
 
 ## Functions
 
@@ -129,10 +107,7 @@ create_thesis(
 )
 ```
 
-`num_papers` (1–10) controls how many constituent paper chapters the
-journal-format skeleton scaffolds. Paper 1 is a rich demo chapter that
-exercises citations, equations, tables, figures, and per-paper
-appendices; Papers 2..N are bare structural templates.
+`num_papers` (1–10) controls how many constituent paper chapters the journal-format skeleton scaffolds. Paper 1 is a rich demo chapter that exercises citations, equations, tables, figures, and per-paper appendices; Papers 2..N are bare structural templates.
 
 ### Word count
 
@@ -145,9 +120,7 @@ word_count(".")
 #>  Status            within cap
 ```
 
-The count excludes preliminaries, references, and appendices per policy
-section 4.6 fn. 1. The cap is degree × format-specific (PhD standard:
-80,000; PhD journal: 80,000; MPhil: 60,000; DBA: 60,000; etc.).
+The count excludes preliminaries, references, and appendices per policy section 4.6 fn. 1. The cap is degree × format-specific (PhD standard: 80,000; PhD journal: 80,000; MPhil: 60,000; DBA: 60,000; etc.).
 
 ### Compliance check
 
@@ -162,13 +135,7 @@ check_thesis(".", format = "console")
 check_thesis(".", format = "json")
 ```
 
-`check_thesis()` runs a registry of 18 source-phase rules covering:
-required preliminary pages and order (section 8.1), declaration text and
-variant (8.1.f), copyright statement – all four mandatory bullets
-(8.1.g), font / line spacing / LaTeX engine compatibility (7.1), word
-caps per degree × format (4.6, 13.11), citation style and bibliography
-presence (7.2), and journal-format-specific rules including rationale
-chapter (13.10) and contribution declarations (13.3).
+`check_thesis()` runs a registry of 18 source-phase rules covering: required preliminary pages and order (section 8.1), declaration text and variant (8.1.f), copyright statement – all four mandatory bullets (8.1.g), font / line spacing / LaTeX engine compatibility (7.1), word caps per degree × format (4.6, 13.11), citation style and bibliography presence (7.2), and journal-format-specific rules including rationale chapter (13.10) and contribution declarations (13.3).
 
 ### Policy version
 
@@ -199,31 +166,23 @@ For a full walkthrough, see the vignettes:
 
 - `vignette("getting-started")` – scaffold, render, check
 - `vignette("journal-format")` – conventions for paper-based theses
-- `vignette("compliance")` – the full 18-rule list and the policy
-  passages each one encodes
+- `vignette("compliance")` – the full 18-rule list and the policy passages each one encodes
 - `vignette("citation-styles")` – choosing and applying a CSL
 
-The full reference is also available at the [pkgdown
-site](https://gabbocg.github.io/uomthesis/).
+The full reference is also available at the [pkgdown site](https://gabbocg.github.io/uomthesis/).
 
 ## Not in scope
 
 - Word (`.docx`) output – PDF + HTML only
 - Other UoM faculties or schools – AMBS within Humanities only
-- Practice-based PhDs – policy section 14 differs too much by School for
-  the validator to be reliable
+- Practice-based PhDs – policy section 14 differs too much by School for the validator to be reliable
 - Plagiarism / Turnitin-style detection
 
 ## Getting help
 
-If you encounter a bug, please file an issue with a minimal reproducible
-example on [GitHub](https://github.com/gabbocg/uomthesis/issues). For
-questions, email <gabriel.cabrera.guz@gmail.com>.
+If you encounter a bug, please file an issue with a minimal reproducible example on [GitHub](https://github.com/gabbocg/uomthesis/issues). For questions, email <gabriel.cabrera.guz@gmail.com>.
 
 ## References
 
-- The University of Manchester. *Presentation of Theses Policy*. Version
-  12, March 2026.
-  <https://documents.manchester.ac.uk/display.aspx?DocID=7420>.
-- The University of Manchester. *Journal Format Theses: Guiding
-  Principles*. Faculty of Humanities.
+- The University of Manchester. *Presentation of Theses Policy*. Version 12, March 2026. <https://documents.manchester.ac.uk/display.aspx?DocID=7420>.
+- The University of Manchester. *Journal Format Theses: Guiding Principles*. Faculty of Humanities.

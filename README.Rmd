@@ -1,5 +1,7 @@
 ---
-output: github_document
+output:
+  github_document:
+    pandoc_args: ["--wrap=none"]
 ---
 
 <!-- README.md is generated from README.Rmd. Edit only README.Rmd. -->
