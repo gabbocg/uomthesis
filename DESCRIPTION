@@ -1,7 +1,7 @@
 Package: uomthesis
 Type: Package
 Title: University of Manchester AMBS PhD Thesis Template and Compliance Tools
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: c(
     person(
       "Gabriel", "Cabrera",

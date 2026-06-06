@@ -1,8 +1,6 @@
-# uomthesis 0.0.0.9000
+# uomthesis 0.1.0
 
-This is the initial development version of `uomthesis`. It is **not yet stable** and the API may change before the first tagged release (`0.1.0`).
-
-*Development version -- not yet released.*
+First tagged release.
 
 ## Features
 
