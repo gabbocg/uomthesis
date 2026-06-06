@@ -1,6 +1,7 @@
 ---
-title: "Declaration of Originality"
+title: "Declaration of originality"
 unnumbered: true
+prelim: true
 ---
 
 I declare that no portion of the work referred to in this thesis has been submitted in support of an application for another degree or qualification of this or any other university or other institute of learning.

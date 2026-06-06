@@ -1,6 +1,7 @@
 ---
 title: "Copyright Statement"
 unnumbered: true
+prelim: true
 ---
 
 i. The author of this thesis (including any appendices and/or schedules to this thesis) owns certain copyright or related rights in it (the "Copyright") and they have given the University of Manchester certain rights to use such Copyright, including for administrative purposes.

@@ -24,6 +24,8 @@ contributes:
       template: template.tex
       include-in-header:
         - partials/header.tex
+      filters:
+        - filters/unnumber-prelims.lua
       cite-method: citeproc
     html:
       theme: theme/uomthesis.scss

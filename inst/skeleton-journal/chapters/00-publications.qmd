@@ -1,16 +1,11 @@
 ---
-title: "List of Publications"
+title: "List of publications"
 unnumbered: true
+prelim: true
 ---
 
-The work in this thesis has produced the following publications and manuscripts. The candidate is the first author of all three papers; co-author contributions are documented in each constituent chapter.
+{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}. & Co-author, A. (2026). *Title of the first paper.* Journal Name, in press.
 
-::: {.callout-note}
-Replace the placeholders below with your own publication list. The University of Manchester policy on Journal Format theses (section 13) encourages candidates to indicate, for each paper, its publication status (published / submitted / in preparation) and the candidate's contribution.
-:::
+{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}., Co-author, A. & Co-author, B. (2026). *Title of the second paper.* Manuscript under review.
 
-1. **{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}** & Co-author, A. (2026). *Adoption patterns of compliant authoring tools in UK business schools.* Journal of Doctoral Education. *(Chapter 2.)*
-
-2. **{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}**, Co-author, A. & Co-author, B. (2026). *Compliance enforcement and writing quality: An A/B experiment.* Manuscript under review. *(Chapter 3.)*
-
-3. **{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}** & Co-author, C. (2026). *Supervisor perspectives on tooling in doctoral supervision.* Manuscript in preparation. *(Chapter 4.)*
+{{< meta uomthesis.candidate.surname >}}, {{< meta uomthesis.candidate.forename >}}. & Co-author, C. (2026). *Title of the third paper.* Manuscript in preparation.

@@ -1,48 +1,33 @@
 ---
-title: "Paper 1: Adoption Patterns of Compliant Authoring Tools in UK Business Schools"
+title: "Title of the first paper"
 ---
 
+## Preface {.unnumbered}
+
 ::: {.contribution}
-I designed the study, drafted and piloted the survey instrument, recruited the participating institutions, collected and cleaned the data, performed the analysis, and wrote the manuscript. Co-author A advised on sampling strategy and reviewed successive drafts.
+Briefly describe the candidate's contribution to this paper, e.g.: I designed the study, collected the data, performed the analysis, and wrote the manuscript. Co-author A advised on the methodology.
 :::
 
-## Abstract
-
-Cross-sectional survey of doctoral programme directors at 28 UK business schools investigating patterns of adoption of policy-compliant authoring tools. We find substantial heterogeneity across institutions, with adoption rates ranging from 8% to 71%.
+State the publication status of the paper here (e.g., *published in Journal Name, 2024*; *under review at Journal Name*; *in preparation*).
 
 ## Introduction
 
-Policy-compliant authoring tools have proliferated rapidly over the past five years, but their uptake in doctoral education is poorly documented [@smith2024innovation].
+## Background and related literature
 
-## Methods
+## Data
 
-A web-administered survey was sent to doctoral programme directors at all 28 AACSB-accredited UK business schools. The response rate was 89% ($n = 25$ usable responses).
+## Methodology
 
 ## Results
 
-Adoption rates ranged from 8% to 71% with a mean of 34%. Two institutional factors are associated with higher adoption:
+## Robustness tests
 
-- **Institutional size**: a one-standard-deviation increase in cohort size is associated with a 6.2 percentage-point increase in adoption ($p < 0.05$).
-- **Dedicated methods training**: programmes with a formal research-methods sequence show 11.4 percentage-point higher adoption ($p < 0.01$).
+## Conclusions
 
-## Discussion
+## References {.unnumbered}
 
-The findings suggest that adoption is structurally enabled by institutional resources rather than driven by individual candidate preferences.
+Insert the references cited in this paper.
 
-## Limitations
+# Appendices {.appendix .unnumbered}
 
-The cross-sectional design precludes causal claims.
-
-## Appendix 2.A: Survey instrument
-
-The full 18-item survey instrument is reproduced below. Items were piloted with three programme directors and refined based on cognitive interviews.
-
-::: {.callout-note}
-## Section 1: Programme demographics
-
-Items 1.1–1.4 capture institution size, accreditation status, and doctoral cohort size.
-:::
-
-## Appendix 2.B: Sampling frame
-
-The sampling frame was constructed from the AACSB UK directory accessed in September 2025.
+## 2.A Supplementary material

@@ -1,12 +1,13 @@
 ---
 title: "Abstract"
 unnumbered: true
+prelim: true
 ---
 
-This thesis examines the adoption of policy-compliant authoring tools in doctoral education through three constituent papers, submitted in **journal format** per Presentation of Theses Policy section 13. The papers address distinct but complementary aspects of the central question: a cross-institutional survey of tool adoption (Paper 1), an experimental study of compliance enforcement on writing quality (Paper 2), and a qualitative analysis of supervisor perspectives (Paper 3).
+The University of Manchester  
+{{< meta uomthesis.candidate.forename >}} {{< meta uomthesis.candidate.middle_initial >}} {{< meta uomthesis.candidate.surname >}}  
+{{< meta uomthesis.degree >}}  
+*{{< meta title >}}*  
+{{< meta uomthesis.year >}}
 
-Together, the papers establish that policy-compliant tooling is associated with measurable improvements in submission quality, that this association is mediated by supervisor engagement, and that adoption patterns vary systematically with disciplinary culture. The conclusion synthesises across the three papers and offers practical recommendations.
-
-All findings are reproducible from the underlying data and code, made available alongside the submitted PDF.
-
-<!-- TODO: Replace this placeholder with your own abstract. Aim for under ~350 words. -->
+Write your abstract here. The University policy (section 8.1.e) requires that the abstract not exceed one page; aim for under 350 words at 12pt with 1.5 line spacing. State the research question, the methodological approach, the principal findings, and the contribution.

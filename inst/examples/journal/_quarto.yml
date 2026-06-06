@@ -3,7 +3,7 @@ project:
   output-dir: _book
 
 book:
-  title: "Adoption of Compliant Authoring Tools in Doctoral Education: Three Studies"
+  title: "Essays in Empirical Finance"
   chapters:
     - index.qmd
     - chapters/00-publications.qmd

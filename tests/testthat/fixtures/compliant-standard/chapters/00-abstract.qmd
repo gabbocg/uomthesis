@@ -1,6 +1,7 @@
 ---
 title: "Abstract"
 unnumbered: true
+prelim: true
 ---
 
 This thesis examines an example research question to demonstrate the capabilities of the `uomthesis` Quarto template. The work develops a structured argument across six chapters, drawing on a mixed-methods approach.

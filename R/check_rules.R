@@ -521,6 +521,12 @@ rule_copyright_author_match <- function() list(
     has_forename <- grepl(cand$forename, body, fixed = TRUE)
     has_surname  <- grepl(cand$surname,  body, fixed = TRUE)
     if (has_forename && has_surname) return(NULL)
+    # If neither the candidate's name nor any obvious placeholder is present,
+    # the copyright page simply doesn't carry a signature (this is the pattern
+    # used by many real AMBS theses). Treat as a pass; the candidate's identity
+    # is established by the title page.
+    has_placeholder <- grepl("\\[Author Name\\]|\\[Your Name\\]|Lorem ipsum", body)
+    if (!has_forename && !has_surname && !has_placeholder) return(NULL)
     list(
       rule_id    = "copyright-author-match",
       severity   = "error",

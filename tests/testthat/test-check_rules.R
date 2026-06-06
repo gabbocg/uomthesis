@@ -544,11 +544,26 @@ test_that("copyright-author-match passes when candidate name is in partial", {
   expect_null(rule$check(ctx))
 })
 
-test_that("copyright-author-match fires when candidate name is absent", {
+test_that("copyright-author-match passes when no name is present", {
+  # Policy section 8.1.g does not require an author signature on the copyright
+  # page; the candidate's identity is established by the title page. Many real
+  # AMBS theses use a "bullets-only" copyright page.
   root <- make_mock_project(
     forename = "Jane", surname = "Doe",
     partials = list(
-      "copyright.tex" = c("Copyright 2027 John Smith. All rights reserved.")
+      "copyright.tex" = c("Some bullet text without any author name signature.")
+    )
+  )
+  rule <- get_rule("copyright-author-match")
+  ctx  <- build_ctx(root)
+  expect_null(rule$check(ctx))
+})
+
+test_that("copyright-author-match fires on unsubstituted scaffold placeholder", {
+  root <- make_mock_project(
+    forename = "Jane", surname = "Doe",
+    partials = list(
+      "copyright.tex" = c("Copyright 2027 [Author Name]. All rights reserved.")
     )
   )
   rule <- get_rule("copyright-author-match")

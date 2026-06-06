@@ -25,6 +25,7 @@ contributes:
       include-in-header:
         - partials/header.tex
       filters:
+        - filters/unnumber-prelims.lua
         - filters/contribution.lua
       cite-method: citeproc
     html:
