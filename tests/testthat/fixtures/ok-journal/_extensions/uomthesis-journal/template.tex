@@ -1,0 +1,169 @@
+\documentclass[$if(fontsize)$$fontsize$,$endif$a4paper]{report}
+
+\usepackage{ifluatex}
+\ifluatex
+  \usepackage{fontspec}
+$if(mainfont)$
+  \setmainfont{$mainfont$}
+$endif$
+\else
+  % pdfLaTeX fallback: only Times New Roman is policy-safe here
+  \usepackage{mathptmx}
+\fi
+
+$if(geometry)$
+\usepackage[$for(geometry)$$geometry$$sep$,$endfor$]{geometry}
+$else$
+\usepackage[left=40mm,right=15mm,top=20mm,bottom=20mm]{geometry}
+$endif$
+
+\usepackage{setspace}
+$if(linestretch)$\setstretch{$linestretch$}$endif$
+
+% Policy section 7.4: single Arabic sequence, no Romans, starting at title page
+\usepackage{fancyhdr}
+\pagenumbering{arabic}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}
+
+% Policy section 7.7: blank pages must say "Blank page"
+\newcommand{\blankpage}{\clearpage\thispagestyle{empty}\null\vfill
+  \centerline{Blank page}\vfill\clearpage}
+
+\usepackage{graphicx}
+\usepackage{hyperref}
+%% Coloured hyperlinks driven by `uomthesis.hyperlink.*` metadata in
+%% index.qmd. xcolor is pulled in by hyperref when colorlinks=true, so
+%% any named xcolor colour (`blue`, `red`, `magenta`, `teal`,
+%% `Maroon`, ...) is valid. To change, edit index.qmd; defaults shown
+%% below are applied when the metadata field is null or absent.
+\hypersetup{
+  colorlinks = true,
+  citecolor  = $if(uomthesis.hyperlink.cite)$$uomthesis.hyperlink.cite$$else$blue$endif$,
+  linkcolor  = $if(uomthesis.hyperlink.link)$$uomthesis.hyperlink.link$$else$blue$endif$,
+  urlcolor   = $if(uomthesis.hyperlink.url)$$uomthesis.hyperlink.url$$else$magenta$endif$,
+  filecolor  = $if(uomthesis.hyperlink.file)$$uomthesis.hyperlink.file$$else$magenta$endif$
+}
+%% Equation refs (\eqref, Quarto's @eq-...) flip to their own colour
+%% inside a group so other internal refs keep the linkcolor above.
+%% Deferred to \AtBeginDocument because \eqref is provided by amsmath,
+%% which is loaded later in this template.
+\AtBeginDocument{%
+  \let\OldEqref\eqref
+  \renewcommand{\eqref}[1]{\begingroup\hypersetup{linkcolor=$if(uomthesis.hyperlink.equation)$$uomthesis.hyperlink.equation$$else$red$endif$}\OldEqref{#1}\endgroup}%
+}
+
+% Maths
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsfonts}
+\usepackage{mathtools}
+
+% Tables / captions / floats
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{caption}
+\usepackage{float}
+
+% Pandoc helper macros
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\providecommand{\pandocbounded}[1]{#1}
+\providecommand{\real}[1]{#1}
+
+% Pandoc citeproc helpers. \makeatletter/\makeatother is required so
+% that \hyper@@link (which contains @ characters) is tokenised as a
+% single control sequence; without it the @s would be catcode "other"
+% and the macro expansion would fail at use-time with
+% "Undefined control sequence \hyper".
+\makeatletter
+\providecommand{\citeproctext}{}
+\providecommand{\citeproc}[2]{\hyper@@link[cite]{}{ref-#1}{#2}\nocite{#1}}
+\makeatother
+
+% Pandoc CSL helper macros. The `list` environment is configured to
+% (i) suppress the empty `[]` label that author-date CSL styles leave at
+% the start of each entry, and (ii) tighten inter-entry spacing.
+\usepackage{calc}
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{0pt}
+\newenvironment{CSLReferences}[2]
+ {\begin{list}{}{%
+  \setlength{\labelwidth}{0pt}%
+  \setlength{\labelsep}{0pt}%
+  \setlength{\itemindent}{0pt}%
+  \setlength{\leftmargin}{0pt}%
+  \setlength{\parsep}{0pt}%
+  \setlength{\topsep}{0pt}%
+  \ifodd #1
+   \setlength{\leftmargin}{\cslhangindent}%
+   \setlength{\itemindent}{-1\cslhangindent}%
+  \fi
+  \setlength{\itemsep}{0.25\baselineskip}%
+  \renewcommand{\makelabel}[1]{}}}
+ {\end{list}}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+$if(highlighting-macros)$
+$highlighting-macros$
+$endif$
+
+\begin{document}
+
+%% ===== TITLE PAGE (policy section 8.1.b) =====
+\begin{titlepage}
+\centering
+\vspace*{6cm}
+{\Large\bfseries $title$\par}
+\vspace{3cm}
+A thesis submitted to The University of Manchester for the degree of\\
+$if(uomthesis.degree_full)$$uomthesis.degree_full$$else$$uomthesis.degree$$endif$\\
+in the Faculty of $uomthesis.faculty$
+\vspace{3cm}
+
+$uomthesis.year$
+\vfill
+$uomthesis.candidate.forename$$if(uomthesis.candidate.middle_initial)$ $uomthesis.candidate.middle_initial$.$endif$ $uomthesis.candidate.surname$$if(uomthesis.candidate.native_name)$\\($uomthesis.candidate.native_name$)$endif$\\
+$uomthesis.school$$if(uomthesis.division)$, $uomthesis.division$$endif$
+\end{titlepage}
+
+%% ===== Table of contents + Lists =====
+%% Per policy section 8.1: contents > other lists > abstract > declaration > copyright.
+%% For journal format the user can also include a "List of Publications" as the
+%% first unnumbered chapter (see chapters/00-publications.qmd). Abstract,
+%% Declaration of Originality, Copyright Statement and Acknowledgements all live
+%% as unnumbered chapter files in chapters/00-*.qmd (kept in this order in
+%% _quarto.yml). The journal-format rationale (policy section 13.10) lives
+%% inside chapters/01-introduction.qmd as a section.
+$if(toc)$
+\setcounter{tocdepth}{$toc-depth$}
+\tableofcontents
+%% Policy section 8.1.d: word count of the main text, bottom-right of the
+%% contents page. Pulled from the index.qmd metadata field
+%% uomthesis.word_count; falls back to a placeholder until it is set.
+\vspace*{\fill}
+\noindent\hfill\textbf{Word count:} $if(uomthesis.word_count)$$uomthesis.word_count$$else$[Insert word count]$endif$
+\clearpage
+$endif$
+
+$if(lof)$\listoffigures$endif$
+$if(lot)$\listoftables$endif$
+
+$body$
+
+$for(include-after)$
+$include-after$
+$endfor$
+
+\end{document}

@@ -1,7 +1,11 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.claude$
+^\.github$
 ^docs$
 ^uomthesis$
 ^LICENSE\.md$
 ^dev$
+^README\.Rmd$
+^pkgdown$
+\.keep$

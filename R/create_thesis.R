@@ -130,6 +130,10 @@ create_thesis <- function(path,
     fs::dir_create(dirname(dest))
     fs::file_copy(src, dest, overwrite = TRUE)
   }
+  # The skeleton's empty `figures/` directory is dropped by R CMD build
+  # (since `.keep` sentinel files are excluded via .Rbuildignore), so
+  # recreate it explicitly here.
+  fs::dir_create(file.path(path, "figures"))
 
   # Copy extension
   ext_src <- system.file(

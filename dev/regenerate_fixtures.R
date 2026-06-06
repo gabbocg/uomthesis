@@ -1,14 +1,19 @@
 # dev/regenerate_fixtures.R
 # Regenerate the compliance fixtures from scratch.
 # Run after the scaffolder or rules change in a way that affects fixture content.
+#
+# Fixture directory names are deliberately short (8-11 chars) so that the
+# full path to deeply-nested files (e.g. _extensions/<ext>/csl/<file>.csl)
+# stays under the 100-byte threshold that triggers a `non-portable file
+# paths` NOTE under R CMD check.
 
 library(uomthesis)
 library(fs)
 
 fixtures_root <- "tests/testthat/fixtures"
 
-# 1. compliant-standard
-dst <- file.path(fixtures_root, "compliant-standard")
+# 1. ok-std
+dst <- file.path(fixtures_root, "ok-std")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 create_thesis(
   dst, format = "standard", degree = "PhD",
@@ -17,8 +22,8 @@ create_thesis(
   year = 2027, division = "MSM", open = FALSE
 )
 
-# 2. compliant-journal
-dst <- file.path(fixtures_root, "compliant-journal")
+# 2. ok-journal
+dst <- file.path(fixtures_root, "ok-journal")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 create_thesis(
   dst, format = "journal", degree = "PhD",
@@ -27,9 +32,9 @@ create_thesis(
   year = 2027, division = "MSM", open = FALSE
 )
 
-# 3. noncompliant-missing-cr (copyright chapter file reduced to a stub)
-src <- file.path(fixtures_root, "compliant-standard")
-dst <- file.path(fixtures_root, "noncompliant-missing-cr")
+# 3. bad-no-cr (copyright chapter file reduced to a stub)
+src <- file.path(fixtures_root, "ok-std")
+dst <- file.path(fixtures_root, "bad-no-cr")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)
 writeLines(
@@ -38,8 +43,8 @@ writeLines(
   file.path(dst, "chapters/00-copyright.qmd")
 )
 
-# 4. noncompliant-altered-decl (declaration chapter file paraphrased)
-dst <- file.path(fixtures_root, "noncompliant-altered-decl")
+# 4. bad-decl (declaration chapter file paraphrased)
+dst <- file.path(fixtures_root, "bad-decl")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)
 writeLines(
@@ -49,8 +54,8 @@ writeLines(
   file.path(dst, "chapters/00-declaration.qmd")
 )
 
-# 5. noncompliant-roman (illegal linespacing in index.qmd YAML)
-dst <- file.path(fixtures_root, "noncompliant-roman")
+# 5. bad-roman (illegal linespacing in index.qmd YAML)
+dst <- file.path(fixtures_root, "bad-roman")
 if (dir.exists(dst)) unlink(dst, recursive = TRUE)
 dir_copy(src, dst)
 idx <- file.path(dst, "index.qmd")

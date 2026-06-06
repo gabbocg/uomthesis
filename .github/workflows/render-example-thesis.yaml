@@ -31,9 +31,9 @@ jobs:
           extra-packages: any::devtools, any::pdftools, any::quarto, local::.
           needs: check
 
-      - name: Render compliant-standard fixture
+      - name: Render the compliant standard-format fixture
         run: |
-          cd tests/testthat/fixtures/compliant-standard
+          cd tests/testthat/fixtures/ok-standard
           quarto render --to uomthesis-standard-pdf
 
       - name: Run source-phase compliance check on the rendered project
@@ -41,7 +41,7 @@ jobs:
         run: |
           library(uomthesis)
           res <- check_thesis(
-            project = "tests/testthat/fixtures/compliant-standard",
+            project = "tests/testthat/fixtures/ok-standard",
             fail_on = "error"
           )
           stopifnot(res$ok)
@@ -52,5 +52,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: example-thesis-pdf
-          path: tests/testthat/fixtures/compliant-standard/_book/*.pdf
+          path: tests/testthat/fixtures/ok-standard/_book/*.pdf
           if-no-files-found: warn

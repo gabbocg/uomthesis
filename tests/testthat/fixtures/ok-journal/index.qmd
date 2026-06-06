@@ -1,0 +1,72 @@
+---
+title: "Preface"
+unnumbered: true
+
+uomthesis:
+  candidate:
+    forename: "Jane"
+    middle_initial: "Q"
+    surname: "Doe"
+    native_name: ""
+
+  degree: "PhD"
+  degree_full: "Doctor of Philosophy"
+  faculty: "Humanities"
+  school: "Alliance Manchester Business School"
+  division: "MSM"
+  year: 2027
+
+  thesis_format: "journal"
+
+  # Word count of the main text (policy section 8.1.d). Replace null with
+  # an integer once the thesis is feature-complete; until then the
+  # contents page prints "[Insert word count]" as a placeholder.
+  word_count: null
+
+  # Hyperlink colours in the PDF. Any named xcolor colour is valid
+  # (e.g. blue, red, magenta, teal, Maroon) or `null` to keep the
+  # default shown after the comment.
+  hyperlink:
+    cite:     "blue"      # author-year citation links + references list
+    link:     "blue"      # section / figure / table / footnote refs
+    url:      "magenta"   # external URLs (\url, \href)
+    file:     "magenta"   # file:// links
+    equation: "red"       # equation refs (\eqref, Quarto's @eq-...)
+
+  declaration:
+    variant: "either"
+    joint_authorship_details: null
+
+  ai_disclosure:
+    include: false
+    tools: []
+    description: null
+
+  content_notification:
+    include: false
+    summary: null
+
+  optional_prelims:
+    lay_abstract: false
+    dedication: null
+    acknowledgements: true
+    preface: false
+
+  resubmission:
+    is_resubmission: false
+    revisions_file: null
+
+  covid_impact_statement: null
+
+  journal:
+    rationale: null
+
+mainfont: "Times New Roman"
+linestretch: 1.5
+pdf-engine: lualatex
+lang: en-GB
+# Wrap each in-body citation marker in a \hyperlink{ref-key}{...} call so
+# the author-year text picks up uomthesis.hyperlink.cite (blue). With the
+# default `false`, pandoc-citeproc emits citations as plain black text.
+link-citations: true
+---

@@ -1,0 +1,7 @@
+---
+title: "Abstract"
+unnumbered: true
+prelim: true
+---
+
+Write your abstract here. The University policy (section 8.1.e) requires that the abstract not exceed one page; aim for under 350 words at 12pt with 1.5 line spacing. State the research question, the methodological approach, the principal findings, and the contribution.

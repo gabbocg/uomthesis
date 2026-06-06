@@ -9,14 +9,14 @@
 # Compliant fixtures
 # ---------------------------------------------------------------------------
 
-test_that("compliant-standard fixture passes all source-phase rules", {
-  res <- check_thesis(fixture_path("compliant-standard"), format = "console")
+test_that("ok-std fixture passes all source-phase rules", {
+  res <- check_thesis(fixture_path("ok-std"), format = "console")
   expect_true(res$ok)
   expect_equal(length(res$findings), 0)
 })
 
-test_that("compliant-journal fixture passes all source-phase rules", {
-  res <- check_thesis(fixture_path("compliant-journal"), format = "console")
+test_that("ok-journal fixture passes all source-phase rules", {
+  res <- check_thesis(fixture_path("ok-journal"), format = "console")
   expect_true(res$ok)
   expect_equal(length(res$findings), 0)
 })
@@ -25,8 +25,8 @@ test_that("compliant-journal fixture passes all source-phase rules", {
 # Noncompliant fixtures
 # ---------------------------------------------------------------------------
 
-test_that("noncompliant-missing-cr fires copyright-text rule (multiple findings)", {
-  res <- check_thesis(fixture_path("noncompliant-missing-cr"), format = "console")
+test_that("bad-no-cr fires copyright-text rule (multiple findings)", {
+  res <- check_thesis(fixture_path("bad-no-cr"), format = "console")
   expect_false(res$ok)
   rule_ids <- vapply(res$findings, `[[`, character(1), "rule_id")
   expect_true("copyright-text" %in% rule_ids)
@@ -35,15 +35,15 @@ test_that("noncompliant-missing-cr fires copyright-text rule (multiple findings)
   expect_true(cr_findings >= 1)
 })
 
-test_that("noncompliant-altered-decl fires declaration-text rule", {
-  res <- check_thesis(fixture_path("noncompliant-altered-decl"), format = "console")
+test_that("bad-decl fires declaration-text rule", {
+  res <- check_thesis(fixture_path("bad-decl"), format = "console")
   expect_false(res$ok)
   rule_ids <- vapply(res$findings, `[[`, character(1), "rule_id")
   expect_true("declaration-text" %in% rule_ids)
 })
 
-test_that("noncompliant-roman fires linespacing-allowed rule", {
-  res <- check_thesis(fixture_path("noncompliant-roman"), format = "console")
+test_that("bad-roman fires linespacing-allowed rule", {
+  res <- check_thesis(fixture_path("bad-roman"), format = "console")
   expect_false(res$ok)
   rule_ids <- vapply(res$findings, `[[`, character(1), "rule_id")
   expect_true("linespacing-allowed" %in% rule_ids)
