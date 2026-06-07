@@ -14,7 +14,6 @@
 ## Installation
 
 ``` r
-# Install from GitHub (not yet on CRAN)
 # install.packages("devtools")
 devtools::install_github("gabbocg/uomthesis")
 ```
